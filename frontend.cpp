@@ -136,7 +136,20 @@ void init (void)
     glLoadIdentity();
     glOrtho(0.0, 1.0, 0.0, 1.0, -1.0, 1.0);
 }
+void processSpecialKeys(int key, int x, int y) {
 
+	switch(key)
+	{
+		case GLUT_KEY_LEFT:
+		  d.g.movePaddle(-1);
+		  cout<<"Left\n";
+		  break;
+		case GLUT_KEY_RIGHT:
+		  d.g.movePaddle(1);
+		  cout<<"Right\n";
+		  break;
+	}
+}
 int main(int argc, char** argv)
 {
     glutInit(&argc, argv);
@@ -147,6 +160,9 @@ int main(int argc, char** argv)
     init ();
     glutDisplayFunc(display); 
     glutIdleFunc(display); 
+    glutSpecialFunc(processSpecialKeys);
     glutMainLoop();
     return 0;   /* ISO C requires main to return int. */
 }
+
+

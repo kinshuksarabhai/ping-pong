@@ -57,6 +57,7 @@ int num_balls;
   float distance(Vector,Vector);
   void calculateNextState();
   void printState();
+  void movePaddle(int);
 };
 
 Game::Game()
@@ -124,6 +125,16 @@ void Game::printState()
 {
   cout<<"\nPos:("<<ball[0].position.x<<","<<ball[0].position.y<<")\n";
 }
+void Game::movePaddle(int dir)
+{
+  int id=0;
+  paddle[id].position+=0.1*dir;
+  if(paddle[id].position>1)
+    paddle[id].position=1.0;
+  else if(paddle[id].position<0)
+    paddle[id].position=0.0;
+}
+
 /*
 int main()
 {
