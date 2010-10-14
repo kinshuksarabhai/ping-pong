@@ -4,23 +4,23 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-class Server
+class NetworkServer
 {
-  Game g;
+  GameState gstate;
   int sockfd;
 
-  /*game state*/
-  void setupNewGame();
-  void calculateNewState();
-
-  void executeGameLoop();
-
   /*networking*/
+  void listenForPlayers();
   void sendDataToClient();
   void recieveDataFromClient();
+  void processMessage();//updates gstate
 
 };
-void listenForPlayers()
+NetworkServer::NetworkServer(GameState gs)
+{
+  gstate=gs;
+}
+void NetworkServer::listenForPlayers()
 {
      int portno;
      sockaddr_in serv_addr;
@@ -40,10 +40,18 @@ void listenForPlayers()
               error("ERROR on binding");
 
 }
-void Server::recieveDataFromClient()
+void NetworkServer::sendDataToClient()
 {
-  recv();
 }
-int main()
+void NetworkServer::recieveDataFromClient()
+{
+  char msg[25];
+  recv(sockfd,msg,sizeof(msg),0);
+  cout<<msg;
+}
+void NetworkServer::processMessage()
+{
+}
+int NetworkServer::mainThread()
 {
 }

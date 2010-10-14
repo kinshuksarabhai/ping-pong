@@ -1,0 +1,9 @@
+class GameServer
+{
+  /*game state*/
+  void setupNewGame();
+  void calculateNewState();
+
+  void executeGameLoop();
+
+};

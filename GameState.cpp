@@ -1,70 +1,34 @@
-#include<math.h>
 #include<iostream>
+#include"GameStructures.h"
 
-#define MAX_BALLS 3
-
-#define BALL_SIZE 0.07
-#define PADDLE_LENGTH 0.3
-#define PADDLE_WIDTH 0.05
-#define L (1-2*PADDLE_WIDTH)
 using namespace std;
 
-typedef struct
+enum Status{INIT,WAITING,READY,RUNNING,PAUSED,FINISHED};
+
+class GameState
 {
-  float x,y;
-} Vector;
-
-enum {BRICKED,OPEN};
-
-typedef struct
-{
-  int state;
-  float position;
-  int player_id;
-} Paddle;
-
-typedef struct
-{
-  Vector position,velocity;
-} Ball;
-
-typedef struct
-{
-  int player_id;
-  int wall_no;
-  //  socket sockfd;
-  int state;
-} Player;
-
-//-------------------------------
-
-class Game
-{
-public:
-  /*board parameters*/
+/*static*/
 int hardness_level;
-int game_state;
-
-/*paddle parameters*/
-Paddle paddle[4];
-
-/*ball parameters*/
-Ball ball[MAX_BALLS];
 int num_balls;
 
+public:
+/*updatable parameters*/
+Status status;
+Paddle paddle[4];
+Ball ball[MAX_BALLS];
 
-  Game();
+  GameState();
   float distance(Vector,Vector);
   void calculateNextState();
   void printState();
   void movePaddle(int);
 };
 
-Game::Game()
+GameState::GameState()
 {
   hardness_level=0;
-  game_state=0;
 
+  status=Status.INIT;
   /*paddle*/
   for(int i=0;i<4;i++)
     {
@@ -83,14 +47,15 @@ Game::Game()
     ball[i].velocity.y=-0.03;
     }
 }
-float Game::distance(Vector v1,Vector v2)
+
+float GameState::distance(Vector v1,Vector v2)
 {
   int dx=v1.x-v2.x;
   int dy=v1.y-v2.y;
   return sqrt(dx*dx+dy*dy);
 }
 
-void Game::calculateNextState()
+void GameState::calculateNextState()
 {
       /*interball collisions*/
   for(int i=0;i<num_balls;i++)
@@ -121,11 +86,11 @@ void Game::calculateNextState()
 	ball[i].position.y+=ball[i].velocity.y;
   }
 }
-void Game::printState()
+void GameState::printState()
 {
   cout<<"\nPos:("<<ball[0].position.x<<","<<ball[0].position.y<<")\n";
 }
-void Game::movePaddle(int dir)
+void GameState::movePaddle(int dir)
 {
   int id=0;
   paddle[id].position+=0.1*dir;
@@ -134,14 +99,3 @@ void Game::movePaddle(int dir)
   else if(paddle[id].position<0)
     paddle[id].position=0.0;
 }
-
-/*
-int main()
-{
-  Game g;
-  for(int i=0;i<50;i++)
-    {
-      g.calculateNextState();
-      g.printState();
-    }
-    }*/

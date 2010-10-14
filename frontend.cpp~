@@ -29,7 +29,6 @@ void Display::display()
 {
     glClear (GL_COLOR_BUFFER_BIT);
     display_board();
-    display_paddles();
     display_ball();
     glutSwapBuffers();
     glFlush ();
@@ -53,57 +52,13 @@ void Display::display_board()
 }
 void Display::display_paddles()
 {
-  float x0,x1,y0,y1;
    glColor3f (1.0, 1.0, 1.0);
-
-   //paddle 0
- x0=PADDLE_WIDTH+g.paddle[0].position*(1-2*PADDLE_WIDTH-L*PADDLE_LENGTH);
- x1=PADDLE_WIDTH+L*PADDLE_LENGTH+g.paddle[0].position*(1-2*PADDLE_WIDTH-L*PADDLE_LENGTH);
- y0=0;
- y1=PADDLE_WIDTH;
     glBegin(GL_POLYGON);
-    glVertex3f (x0,y0, 0.0);
-    glVertex3f (x1,y0, 0.0);
-    glVertex3f (x1,y1, 0.0);
-    glVertex3f (x0,y1, 0.0);
+        glVertex3f (PADDLE_WIDTH,PADDLE_WIDTH, 0.0);
+        glVertex3f (1-PADDLE_WIDTH,PADDLE_WIDTH, 0.0);
+        glVertex3f (1-PADDLE_WIDTH,1-PADDLE_WIDTH, 0.0);
+        glVertex3f (PADDLE_WIDTH,1-PADDLE_WIDTH, 0.0);
     glEnd();
-
-    //paddle 1
-    x0=1-PADDLE_WIDTH;
-    x1=1;
-    y0=PADDLE_WIDTH+g.paddle[1].position*(1-2*PADDLE_WIDTH-L*PADDLE_LENGTH);
-    y1=PADDLE_WIDTH+L*PADDLE_LENGTH+g.paddle[1].position*(1-2*PADDLE_WIDTH-L*PADDLE_LENGTH);
-    glBegin(GL_POLYGON);
-    glVertex3f (x0,y0, 0.0);
-    glVertex3f (x1,y0, 0.0);
-    glVertex3f (x1,y1, 0.0);
-    glVertex3f (x0,y1, 0.0);
-    glEnd();
-
-    //paddle 2
-    x0=1-PADDLE_WIDTH+g.paddle[2].position*(2*PADDLE_WIDTH+L*PADDLE_LENGTH-1);
-    x1=1-PADDLE_WIDTH-L*PADDLE_LENGTH+g.paddle[2].position*(2*PADDLE_WIDTH+L*PADDLE_LENGTH-1);
- y0=1-PADDLE_WIDTH;
- y1=1;
-    glBegin(GL_POLYGON);
-    glVertex3f (x0,y0, 0.0);
-    glVertex3f (x1,y0, 0.0);
-    glVertex3f (x1,y1, 0.0);
-    glVertex3f (x0,y1, 0.0);
-    glEnd();
-
-    //paddle 3
-    x0=0;
-    x1=PADDLE_WIDTH;
-    y0=1-PADDLE_WIDTH+g.paddle[3].position*(2*PADDLE_WIDTH+L*PADDLE_LENGTH-1);
-    y1=1-PADDLE_WIDTH-L*PADDLE_LENGTH+g.paddle[3].position*(2*PADDLE_WIDTH+L*PADDLE_LENGTH-1);
-    glBegin(GL_POLYGON);
-    glVertex3f (x0,y0, 0.0);
-    glVertex3f (x1,y0, 0.0);
-    glVertex3f (x1,y1, 0.0);
-    glVertex3f (x0,y1, 0.0);
-    glEnd();
-
 }
 void Display::display_ball()
 {
@@ -113,8 +68,8 @@ float angle;
 double radius=BALL_SIZE;
 
 //x1 = 0.5,y1=0.6;
-x1=PADDLE_WIDTH+g.ball[0].position.x*L;
-y1=PADDLE_WIDTH+g.ball[0].position.y*L;
+x1=g.ball[0].position.x;
+y1=g.ball[0].position.y;
 glColor3f(1.0,1.0,0.0);
 
 glBegin(GL_TRIANGLE_FAN);
@@ -136,20 +91,7 @@ void init (void)
     glLoadIdentity();
     glOrtho(0.0, 1.0, 0.0, 1.0, -1.0, 1.0);
 }
-void processSpecialKeys(int key, int x, int y) {
 
-	switch(key)
-	{
-		case GLUT_KEY_LEFT:
-		  d.g.movePaddle(-1);
-		  cout<<"Left\n";
-		  break;
-		case GLUT_KEY_RIGHT:
-		  d.g.movePaddle(1);
-		  cout<<"Right\n";
-		  break;
-	}
-}
 int main(int argc, char** argv)
 {
     glutInit(&argc, argv);
@@ -160,9 +102,6 @@ int main(int argc, char** argv)
     init ();
     glutDisplayFunc(display); 
     glutIdleFunc(display); 
-    glutSpecialFunc(processSpecialKeys);
     glutMainLoop();
     return 0;   /* ISO C requires main to return int. */
 }
-
-

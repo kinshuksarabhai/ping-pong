@@ -1,2 +1,2 @@
 all:
-	g++ -o frontend -lGL -lGLU -lglut frontend.cpp
+	g++ -o frontend -lGL -lGLU -lglut ClientGUI.cpp

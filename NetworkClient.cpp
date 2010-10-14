@@ -3,21 +3,32 @@
 
 #define PORT_NO 3000
 
-class Client
+class NetworkClient
 {
-  /*game logic*/
-  void executeGameLoop();
+  GameState gstate;
+
+public:
+  NetworkClient(GameState);
 
   /*networking*/
   void connectToServer();
   void sendDataToServer();
   void recieveDataFromServer();
 
-  /*GUI*/
-  void displayGUI();
+  void processMessage();//updates gstate
 };
-
-void connectToServer()
+void NetworkClient::mainThread()
+{
+  ServerMessage smsg;
+  connectToServer();
+  smsg=recieveDataFromServer();
+  processMessage(smsg);
+}
+NetworkClient(GameState gs)
+{
+  gstate=gs;
+}
+void NetworkClient::connectToServer()
 {
      int portno;
      sockaddr_in serv_addr;
@@ -36,11 +47,18 @@ void connectToServer()
        cout<<"error in connecting";
 }
 
-void Client::sendDataToServer()
+void NetworkClient::sendDataToServer()
 {
-int size=send(sockfd, const void *buf, size_t len,0);
+  char msg[]="hello";
+  int size=send(sockfd,msg,sizeof(msg),0);
+  cout<<"msg sent";
+}
+void NetworkClient::recieveDataFromServer()
+{
 }
 int main()
 {
-
+  GameState gs;
+  NetworkClient nc(gs);
+  nc.connectToServer();
 }
