@@ -28,13 +28,15 @@ typedef struct
 enum Command{CONNECT,INIT,READY,START,POSITION,PAUSE,QUIT};
 struct PlayerInfo
 {
-  struct sockaddr_in client_addr;
+sockaddr_in client_addr;
 };
 struct ServerMessage
 {
   Command command;
+  /*one time*/
   int wall_no;
   int num_balls;
+  /*usual*/
   Paddle paddle[4];
   Ball ball[MAX_BALLS];
 };

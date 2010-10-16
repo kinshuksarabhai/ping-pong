@@ -147,11 +147,12 @@ ClientGUI cgui;
 void display()
 {
       cgui.display();
-      usleep(40000);
 }
 void* cgui_main(void*)
 {
-  glutInit(NULL,NULL);
+  int argc=1;
+  char *argv[]={"client",NULL};
+  glutInit(&argc,argv);
     glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize (500, 500); 
     glutInitWindowPosition (100, 100);

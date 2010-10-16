@@ -4,10 +4,10 @@ SERVER_RUNNING,SERVER_PAUSED,SERVER_FINISHED};
 class GameState
 {
 /*static*/
-int hardness_level;
+  int hardness_level;//server only
+public:
 int num_balls;
 
-public:
 /*updatable parameters*/
   int wall_no;//for client
 Status status;
@@ -97,19 +97,17 @@ void GameState::printState()
 }
 void GameState::movePaddle(int dir)
 {
-  int id=0;
-  paddle[id].position+=0.1*dir;
-  if(paddle[id].position>1)
-    paddle[id].position=1.0;
-  else if(paddle[id].position<0)
-    paddle[id].position=0.0;
+  paddle[wall_no].position+=0.1*dir;
+  if(paddle[wall_no].position>1)
+    paddle[wall_no].position=1.0;
+  else if(paddle[wall_no].position<0)
+    paddle[wall_no].position=0.0;
 }
 
 void GameState::getServerMessage(ServerMessage &sm)
 {
   for(int i=0;i<4;i++)
     sm.paddle[i]=paddle[i];
-  sm.num_balls=num_balls;
   for(int i=0;i<num_balls;i++)
     sm.ball[i]=ball[i];
 }
@@ -121,10 +119,9 @@ void GameState::getClientMessage(ClientMessage &cm)
 void GameState::updateGameState(ServerMessage sm)
 {
   for(int i=0;i<4;i++)
-    sm.paddle[i]=paddle[i];
-  sm.num_balls=num_balls;
+    paddle[i]=sm.paddle[i];
   for(int i=0;i<num_balls;i++)
-    sm.ball[i]=ball[i];
+    ball[i]=sm.ball[i];
 }
 void GameState::updateGameState(ClientMessage cm)
 {

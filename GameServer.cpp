@@ -11,7 +11,6 @@
 using namespace std;
 
 #include"GameStructures.h"
-#include"ServerMessage.cpp"
 #include"GameState.cpp"
 #include"NetworkServer.cpp"
 
@@ -27,16 +26,22 @@ public:
 void GameServer::setupNewGame()
 {
 }
-
+void GameServer::executeGameLoop()
+{
+  while(1)
+    {
+      gstate.calculateNextState();
+	usleep(100000);
+    }
+}
 GameServer gs;
 
 int main(int argc, char **argv)
 {
-  /*
+
   pthread_t serverthread;
   gs.setupNewGame();
   pthread_create( &serverthread, NULL,server_main,NULL);
   gs.executeGameLoop();
-  pthread_join(serverthread,NULL);*/
-  server_main(NULL);
+  pthread_join(serverthread,NULL);
 }

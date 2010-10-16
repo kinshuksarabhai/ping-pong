@@ -15,7 +15,6 @@
 using namespace std;
 
 #include"GameStructures.h"
-#include"ServerMessage.cpp"
 #include"GameState.cpp"
 #include"NetworkClient.cpp"
 #include"ClientGUI.cpp"
@@ -34,15 +33,16 @@ GameClient gc;
 
 int main(int argc, char **argv)
 {
-  /*
+
   pthread_t clientthread,guithread;
 
   pthread_create( &clientthread, NULL,client_main,NULL);
   pthread_create( &guithread, NULL,cgui_main,NULL);
 
-  gc.executeGameLoop();
+  //  gc.executeGameLoop();
 
   pthread_join(clientthread,NULL);
-  pthread_join(guithread,NULL);*/
-  client_main(NULL);
+  pthread_join(guithread,NULL);
+  /*
+  client_main(NULL);*/
 }

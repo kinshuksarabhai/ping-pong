@@ -12,7 +12,7 @@ public:
   void initializeServer();
   void sendMessage(ServerMessage,int);
   void recieveMessage();
-  void processMessage(ClientMessage cm,sockaddr src_addr,socklen_t addrlen);//updates gstate
+  void processMessage(ClientMessage cm,sockaddr_in src_addr,socklen_t addrlen);//updates gstate
 };
 NetworkServer::NetworkServer()
 {
@@ -46,21 +46,26 @@ void NetworkServer::sendMessage(ServerMessage sm,int player_no)
 void NetworkServer::recieveMessage()
 {
   ClientMessage cm;
-  sockaddr client_addr;
+  sockaddr_in client_addr;
   socklen_t addrlen;
-  recvfrom(sockfd,&cm,sizeof(cm),0,&client_addr,&addrlen);
+  recvfrom(sockfd,&cm,sizeof(cm),0,(sockaddr*)&client_addr,&addrlen);
   processMessage(cm,client_addr,addrlen);
 }
 void NetworkServer::processMessage(ClientMessage cm,
-struct sockaddr client_addr,socklen_t addrlen)
+sockaddr_in client_addr,socklen_t addrlen)
 {
+  ServerMessage sm;
   switch(cm.command)
     {
       //    case INIT:
     case CONNECT:
-      if(num_players<3)
+     if(num_players<4)
 	{
-	  //	  player[num_players].client_addr=client_addr;
+	  player[num_players].client_addr=client_addr;
+	  sm.command=INIT;
+	  sm.num_balls=gstate.num_balls;
+	  sm.wall_no=num_players;
+	  sendMessage(sm,num_players);
 	  num_players++;
 	}
       break;
@@ -82,15 +87,22 @@ void* server_main(void*)
 {
   ServerMessage sm;
   server.initializeServer();
+  while(server.num_players<1)
+    {
+      server.recieveMessage();
+    }
   while(1)
     {
-      cout<<"in loop\n";
-      server.recieveMessage();
-      /*
+      for(int i=0;i<server.num_players;i++)
+	{
+      cout<<"recv pos:\n";
+	server.recieveMessage();
+      cout<<"send pos:\n";
+      cout<<"("<<gstate.ball[0].position.x<<","<<gstate.ball[0].position.y<<")\n";
       gstate.getServerMessage(sm);
-      for(int i=0;i<num_players;i++)
-      server.sendMessage(sm);
-      usleep(100000);*/
-      cout<<gstate.paddle[0].position<<"\n";
+      sm.command=POSITION;
+	server.sendMessage(sm,i);
+	usleep(10000);
+	}
     }
 }
