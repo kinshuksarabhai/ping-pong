@@ -1,38 +1,11 @@
-#include<GL/gl.h>
-#include<GL/glu.h>
-#include<GL/glut.h>
-
-#include<math.h>
-#include<iostream>
-
-#include"GameState.cpp"
-using namespace std;
-
 class ClientGUI
 {
-  GameState gstate;
 public:
-  ClientGUI();
   void display();
   void display_board();
   void display_paddles();
   void display_ball();
 };
-  ClientGUI d;
-void ClientGUI::mainThread()
-{
-}
-ClientGUI::ClientGUI(GameState gs)
-{
-  gstate=gs;
-}
-void display()
-{
-      d.g.calculateNextState();
-      d.g.printState();
-      d.display();
-      usleep(40000);
-}
 void ClientGUI::display()
 {
     glClear (GL_COLOR_BUFFER_BIT);
@@ -65,8 +38,8 @@ void ClientGUI::display_paddles()
    glColor3f (1.0, 1.0, 1.0);
 
    //paddle 0
- x0=PADDLE_WIDTH+g.paddle[0].position*(1-2*PADDLE_WIDTH-L*PADDLE_LENGTH);
- x1=PADDLE_WIDTH+L*PADDLE_LENGTH+g.paddle[0].position*(1-2*PADDLE_WIDTH-L*PADDLE_LENGTH);
+ x0=PADDLE_WIDTH+gstate.paddle[0].position*(1-2*PADDLE_WIDTH-L*PADDLE_LENGTH);
+ x1=PADDLE_WIDTH+L*PADDLE_LENGTH+gstate.paddle[0].position*(1-2*PADDLE_WIDTH-L*PADDLE_LENGTH);
  y0=0;
  y1=PADDLE_WIDTH;
     glBegin(GL_POLYGON);
@@ -79,8 +52,8 @@ void ClientGUI::display_paddles()
     //paddle 1
     x0=1-PADDLE_WIDTH;
     x1=1;
-    y0=PADDLE_WIDTH+g.paddle[1].position*(1-2*PADDLE_WIDTH-L*PADDLE_LENGTH);
-    y1=PADDLE_WIDTH+L*PADDLE_LENGTH+g.paddle[1].position*(1-2*PADDLE_WIDTH-L*PADDLE_LENGTH);
+    y0=PADDLE_WIDTH+gstate.paddle[1].position*(1-2*PADDLE_WIDTH-L*PADDLE_LENGTH);
+    y1=PADDLE_WIDTH+L*PADDLE_LENGTH+gstate.paddle[1].position*(1-2*PADDLE_WIDTH-L*PADDLE_LENGTH);
     glBegin(GL_POLYGON);
     glVertex3f (x0,y0, 0.0);
     glVertex3f (x1,y0, 0.0);
@@ -89,8 +62,8 @@ void ClientGUI::display_paddles()
     glEnd();
 
     //paddle 2
-    x0=1-PADDLE_WIDTH+g.paddle[2].position*(2*PADDLE_WIDTH+L*PADDLE_LENGTH-1);
-    x1=1-PADDLE_WIDTH-L*PADDLE_LENGTH+g.paddle[2].position*(2*PADDLE_WIDTH+L*PADDLE_LENGTH-1);
+    x0=1-PADDLE_WIDTH+gstate.paddle[2].position*(2*PADDLE_WIDTH+L*PADDLE_LENGTH-1);
+    x1=1-PADDLE_WIDTH-L*PADDLE_LENGTH+gstate.paddle[2].position*(2*PADDLE_WIDTH+L*PADDLE_LENGTH-1);
  y0=1-PADDLE_WIDTH;
  y1=1;
     glBegin(GL_POLYGON);
@@ -103,8 +76,8 @@ void ClientGUI::display_paddles()
     //paddle 3
     x0=0;
     x1=PADDLE_WIDTH;
-    y0=1-PADDLE_WIDTH+g.paddle[3].position*(2*PADDLE_WIDTH+L*PADDLE_LENGTH-1);
-    y1=1-PADDLE_WIDTH-L*PADDLE_LENGTH+g.paddle[3].position*(2*PADDLE_WIDTH+L*PADDLE_LENGTH-1);
+    y0=1-PADDLE_WIDTH+gstate.paddle[3].position*(2*PADDLE_WIDTH+L*PADDLE_LENGTH-1);
+    y1=1-PADDLE_WIDTH-L*PADDLE_LENGTH+gstate.paddle[3].position*(2*PADDLE_WIDTH+L*PADDLE_LENGTH-1);
     glBegin(GL_POLYGON);
     glVertex3f (x0,y0, 0.0);
     glVertex3f (x1,y0, 0.0);
@@ -121,8 +94,8 @@ float angle;
 double radius=BALL_SIZE;
 
 //x1 = 0.5,y1=0.6;
-x1=PADDLE_WIDTH+g.ball[0].position.x*L;
-y1=PADDLE_WIDTH+g.ball[0].position.y*L;
+x1=PADDLE_WIDTH+gstate.ball[0].position.x*L;
+y1=PADDLE_WIDTH+gstate.ball[0].position.y*L;
 glColor3f(1.0,1.0,0.0);
 
 glBegin(GL_TRIANGLE_FAN);
@@ -152,7 +125,6 @@ void processNormalKeys(unsigned char key, int x, int y)
       exit(0);
       break;
     case ' ':cout<<"space\n";
-      if(
       break;
     }
 }
@@ -162,19 +134,25 @@ void processSpecialKeys(int key, int x, int y)
 	switch(key)
 	{
 		case GLUT_KEY_LEFT:
-		  d.g.movePaddle(-1);
+		  gstate.movePaddle(-1);
 		  cout<<"Left\n";
 		  break;
 		case GLUT_KEY_RIGHT:
-		  d.g.movePaddle(1);
+		  gstate.movePaddle(1);
 		  cout<<"Right\n";
 		  break;
 	}
 }
-int main(int argc, char** argv)
+ClientGUI cgui;
+void display()
 {
-    glutInit(&argc, argv);
-    glutInitClientGUIMode (GLUT_DOUBLE | GLUT_RGB);
+      cgui.display();
+      usleep(40000);
+}
+void* cgui_main(void*)
+{
+  glutInit(NULL,NULL);
+    glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize (500, 500); 
     glutInitWindowPosition (100, 100);
     glutCreateWindow ("Ping Pong");
@@ -184,7 +162,6 @@ int main(int argc, char** argv)
     glutKeyboardFunc(processNormalKeys);
     glutSpecialFunc(processSpecialKeys);
     glutMainLoop();
-    return 0;   /* ISO C requires main to return int. */
 }
 
 

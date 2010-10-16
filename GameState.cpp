@@ -1,9 +1,5 @@
-#include<iostream>
-#include"GameStructures.h"
-
-using namespace std;
-
-enum Status{INIT,WAITING,READY,RUNNING,PAUSED,FINISHED};
+enum Status{SERVER_INIT,SERVER_WAITING,SERVER_READY,
+SERVER_RUNNING,SERVER_PAUSED,SERVER_FINISHED};
 
 class GameState
 {
@@ -13,14 +9,23 @@ int num_balls;
 
 public:
 /*updatable parameters*/
+  int wall_no;//for client
 Status status;
 Paddle paddle[4];
 Ball ball[MAX_BALLS];
 
   GameState();
   float distance(Vector,Vector);
-  void calculateNextState();
   void printState();
+
+  /*for server*/
+  void getClientMessage(ClientMessage&);
+  void updateGameState(ClientMessage);
+  void calculateNextState();
+
+  /*for client*/
+  void getServerMessage(ServerMessage&);
+  void updateGameState(ServerMessage);
   void movePaddle(int);
 };
 
@@ -28,7 +33,7 @@ GameState::GameState()
 {
   hardness_level=0;
 
-  status=Status.INIT;
+  status=SERVER_INIT;
   /*paddle*/
   for(int i=0;i<4;i++)
     {
@@ -99,3 +104,32 @@ void GameState::movePaddle(int dir)
   else if(paddle[id].position<0)
     paddle[id].position=0.0;
 }
+
+void GameState::getServerMessage(ServerMessage &sm)
+{
+  for(int i=0;i<4;i++)
+    sm.paddle[i]=paddle[i];
+  sm.num_balls=num_balls;
+  for(int i=0;i<num_balls;i++)
+    sm.ball[i]=ball[i];
+}
+void GameState::getClientMessage(ClientMessage &cm)
+{
+  cm.wall_no=wall_no;
+  cm.paddle_position=paddle[wall_no].position;
+}
+void GameState::updateGameState(ServerMessage sm)
+{
+  for(int i=0;i<4;i++)
+    sm.paddle[i]=paddle[i];
+  sm.num_balls=num_balls;
+  for(int i=0;i<num_balls;i++)
+    sm.ball[i]=ball[i];
+}
+void GameState::updateGameState(ClientMessage cm)
+{
+  if(cm.wall_no>=0 && cm.wall_no<4)
+    cm.paddle_position=paddle[cm.wall_no].position;
+}
+
+GameState gstate;

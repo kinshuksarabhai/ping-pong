@@ -24,3 +24,23 @@ typedef struct
   Vector position;
   Vector velocity;
 } Ball;
+
+enum Command{CONNECT,INIT,READY,START,POSITION,PAUSE,QUIT};
+struct PlayerInfo
+{
+  struct sockaddr_in client_addr;
+};
+struct ServerMessage
+{
+  Command command;
+  int wall_no;
+  int num_balls;
+  Paddle paddle[4];
+  Ball ball[MAX_BALLS];
+};
+struct ClientMessage
+{
+  Command command;
+  int wall_no;//who is sending??
+  float paddle_position;
+};
