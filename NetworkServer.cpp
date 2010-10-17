@@ -62,6 +62,7 @@ sockaddr_in client_addr,socklen_t addrlen)
     {
       //    case INIT:
     case CONNECT:
+      cout<<"Connection request...\n";
      if(gstate.status==GAME_WAITING && num_players<4)
 	{
 	  int num=alloc_seq[num_players];
@@ -69,9 +70,38 @@ sockaddr_in client_addr,socklen_t addrlen)
 	  gstate.paddle[num].pstate=PLAYER_CONNECTED;
 	  sendMessage(INIT,num);
 	  num_players++;
+	  cout<<num_players<<" Connected...\n";
 	}
       break;
     case READY:
+      cout<<"ready mesg...\n";
+      if(gstate.status==GAME_READY || gstate.status==GAME_PAUSED)
+	{
+	  gstate.paddle[cm.wall_no].pstate=PLAYER_READY;
+	  cout<<num_players<<" players\n";
+	  /*check if all ready*/
+	  int flag=1;
+	  for(int i=0;i<num_players;i++)
+	    {
+	      int num=alloc_seq[i];
+	      if(gstate.paddle[num].pstate!=PLAYER_READY)
+		flag=0;
+	    }
+	  if(flag==1)
+	    {
+	      cout<<"All ready... starting game!!\n";
+	      /*start the game*/
+	      gstate.status=GAME_STARTED;
+	      for(int i=0;i<num_players;i++)
+		{
+		  int num=alloc_seq[i];
+		  gstate.paddle[num].pstate=PLAYER_PLAYING;
+		  sendMessage(START,num);
+		}
+	    }
+	  else
+	    cout<<"Not ready yet...\n";
+	}
       break;
       //    case START:
     case POSITION:
@@ -83,8 +113,12 @@ sockaddr_in client_addr,socklen_t addrlen)
 	{
 	gstate.status=GAME_PAUSED;
 	for(int i=0;i<num_players;i++)
-	  sendMessage(PAUSE,alloc_seq[i]);
+	  {
+	    int num=alloc_seq[i];
+	    gstate.paddle[num].pstate=PLAYER_PAUSED;
+	      sendMessage(PAUSE,num);
 	  }
+	}
       break;
     case QUIT:
       break;
@@ -95,26 +129,30 @@ NetworkServer server;
 void* server_main(void*)
 {
   ServerMessage sm;
-
+  //game init
   server.initializeServer();
   gstate.status=GAME_WAITING;
-  while(server.num_players<2)
+  //game waiting
+  while(server.num_players<1)
     {
       server.recieveMessage();
     }
-
-  //  gstate.status=GAME_READY;
-  gstate.status=GAME_STARTED;
-  while(1)
+  gstate.status=GAME_READY;
+  //game ready
+  while(gstate.status!=GAME_STARTED)
+    {
+      server.recieveMessage();
+    }
+  //game started
+  while(gstate.status!=GAME_FINISHED)
     {
       for(int i=0;i<server.num_players;i++)
 	{
-      cout<<"recv pos:\n";
 	server.recieveMessage();
-      cout<<"send pos:\n";
-      cout<<"("<<gstate.ball[0].position.x<<","<<gstate.ball[0].position.y<<")\n";
 	server.sendMessage(POSITION,alloc_seq[i]);
+	cout<<"Position sent...\n";
 	usleep(40000);
 	}
     }
+  //game finished
 }

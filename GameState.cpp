@@ -3,10 +3,11 @@ GAME_STARTED,GAME_PAUSED,GAME_FINISHED};
 
 class GameState
 {
-  /*static*/
-  int hardness_level;//server only
 public:
+  /*static*/
+  float hardness_level;//server only
   int num_balls;
+  int num_players;
 
   /*updatable parameters*/
   int wall_no;//for client
@@ -41,7 +42,6 @@ GameState::GameState()
       paddle[i].pstate=PLAYER_NA;
     }
   /*balls*/
-  num_balls=2;
   for(int i=0;i<MAX_BALLS;i++)
     {
       /*initial position*/

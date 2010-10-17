@@ -51,12 +51,20 @@ void NetworkClient::processMessage(ServerMessage sm)
   switch(sm.command)
     {
     case INIT:
-      gstate.wall_no=sm.wall_no;
-      gstate.num_balls=sm.num_balls;
-      cout<<"Balls:"<<gstate.num_balls;
-      cout<<"Wall:"<<gstate.wall_no;
+      cout<<"recieved init"<<endl;
+      if(gstate.status==GAME_WAITING)
+	{
+	  gstate.wall_no=sm.wall_no;
+	  gstate.num_balls=sm.num_balls;
+	  cout<<"Balls:"<<gstate.num_balls;
+	  cout<<"Wall:"<<gstate.wall_no;
+	}
       break;
     case START:
+      cout<<"recieved start"<<endl;
+      if(gstate.status==GAME_WAITING ||
+	 gstate.status==GAME_PAUSED)
+	gstate.status=GAME_STARTED;
       break;
     case POSITION:
      if(gstate.status==GAME_STARTED)
@@ -70,6 +78,8 @@ void NetworkClient::processMessage(ServerMessage sm)
 	gstate.status=GAME_PAUSED;
       break;
     case QUIT:
+      gstate.status=GAME_FINISHED;
+      cout<<"\nServer finished";
       break;
     }
 }
@@ -78,23 +88,24 @@ NetworkClient client;
 void* client_main(void*)
 {
   ClientMessage cm;
+  //game init
   client.initializeClient();
   client.sendMessage(CONNECT);
   gstate.status=GAME_WAITING;
-
+  //game waiting
   client.recieveMessage();
-  cout<<gstate.wall_no<<"\n";
-
-  //gstate.status=GAME_READY;
-  gstate.status=GAME_STARTED;
-  while(1)
+  //game ready
+  while(gstate.status!=GAME_STARTED &&
+	gstate.status!=GAME_FINISHED)
     {
-      cout<<"send pos:\n";
-      gstate.getClientMessage(cm);
-      client.sendMessage(POSITION);
-      cout<<"recv pos:\n";
       client.recieveMessage();
-      cout<<"("<<gstate.ball[0].position.x<<","<<gstate.ball[0].position.y<<")\n";
+    }
+  //game started
+  while(gstate.status!=GAME_FINISHED)
+    {
+      client.sendMessage(POSITION);
+      client.recieveMessage();
       usleep(40000);
     }
+  //game finished
 }

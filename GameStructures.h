@@ -11,7 +11,9 @@ typedef struct
   float x,y;
 } Vector;
 
-enum PlayerState{PLAYER_NA,PLAYER_CONNECTED,PLAYER_READY,PLAYER_PLAYING,PLAYER_FINISHED};
+enum PlayerState{PLAYER_NA,PLAYER_CONNECTED,
+		 PLAYER_READY,PLAYER_PLAYING,
+PLAYER_PAUSED,PLAYER_FINISHED};
 struct Paddle
 {
   PlayerState pstate; 

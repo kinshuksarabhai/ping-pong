@@ -25,7 +25,30 @@ public:
 /*initialize game parameters*/
 void GameServer::setupNewGame()
 {
-
+  int num;
+  do
+  {
+  cout<<"\nNo. of players (1-4):"<<endl;
+  cin>>num;
+  }
+  while(num<1 || num>4);
+  gstate.num_players=num;
+ if(num==1)
+   {
+     do
+       {
+	 cout<<"\nHardness level:"<<endl;
+	 cin>>gstate.hardness_level;
+       }
+     while(gstate.hardness_level<0.0 || gstate.hardness_level>1.0);
+   }
+  do
+  {
+    cout<<"\nNo. of balls (1-"<<MAX_BALLS<<"):"<<endl;
+  cin>>num;
+  }
+  while(num<1 || num>MAX_BALLS);
+  gstate.num_balls=num;
 }
 void GameServer::executeGameLoop()
 {
