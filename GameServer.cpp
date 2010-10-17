@@ -25,13 +25,14 @@ public:
 /*initialize game parameters*/
 void GameServer::setupNewGame()
 {
+
 }
 void GameServer::executeGameLoop()
 {
   while(1)
     {
       gstate.calculateNextState();
-	usleep(100000);
+	usleep(40000);
     }
 }
 GameServer gs;

@@ -11,25 +11,21 @@ typedef struct
   float x,y;
 } Vector;
 
-enum State{BRICKED,OPEN};
-
-typedef struct
+enum PlayerState{PLAYER_NA,PLAYER_CONNECTED,PLAYER_READY,PLAYER_PLAYING,PLAYER_FINISHED};
+struct Paddle
 {
-  State state;
+  PlayerState pstate; 
   float position;/*valid, if open*/
-} Paddle;
+  sockaddr_in client_addr;
+};
 
-typedef struct
+struct Ball
 {
   Vector position;
   Vector velocity;
-} Ball;
+};
 
 enum Command{CONNECT,INIT,READY,START,POSITION,PAUSE,QUIT};
-struct PlayerInfo
-{
-sockaddr_in client_addr;
-};
 struct ServerMessage
 {
   Command command;

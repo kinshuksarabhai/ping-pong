@@ -1,18 +1,18 @@
-enum Status{SERVER_INIT,SERVER_WAITING,SERVER_READY,
-SERVER_RUNNING,SERVER_PAUSED,SERVER_FINISHED};
+enum Status{GAME_INIT,GAME_WAITING,GAME_READY,
+GAME_STARTED,GAME_PAUSED,GAME_FINISHED};
 
 class GameState
 {
-/*static*/
+  /*static*/
   int hardness_level;//server only
 public:
-int num_balls;
+  int num_balls;
 
-/*updatable parameters*/
+  /*updatable parameters*/
   int wall_no;//for client
-Status status;
-Paddle paddle[4];
-Ball ball[MAX_BALLS];
+  Status status;
+  Paddle paddle[4];
+  Ball ball[MAX_BALLS];
 
   GameState();
   float distance(Vector,Vector);
@@ -33,23 +33,24 @@ GameState::GameState()
 {
   hardness_level=0;
 
-  status=SERVER_INIT;
+  status=GAME_INIT;
   /*paddle*/
   for(int i=0;i<4;i++)
     {
       paddle[i].position=0.5;
+      paddle[i].pstate=PLAYER_NA;
     }
   /*balls*/
-  num_balls=1;
+  num_balls=2;
   for(int i=0;i<MAX_BALLS;i++)
     {
       /*initial position*/
-      ball[i].position.x=0.1;
-      ball[i].position.y=0.9;
+      ball[i].position.x=0.5+0.1*cos(2.0*M_PI*i/num_balls+M_PI/6.0);
+      ball[i].position.y=0.5+0.1*sin(2.0*M_PI*i/num_balls+M_PI/6.0);
 
       /*initial velocity*/
-    ball[i].velocity.x=0.01;
-    ball[i].velocity.y=-0.03;
+      ball[i].velocity.x=0.2*(ball[i].position.x-0.5);
+      ball[i].velocity.y=0.2*(ball[i].position.y-0.5);
     }
 }
 
@@ -62,6 +63,8 @@ float GameState::distance(Vector v1,Vector v2)
 
 void GameState::calculateNextState()
 {
+  if (status==GAME_STARTED)
+    {
       /*interball collisions*/
   for(int i=0;i<num_balls;i++)
     for(int j=0;j<i;j++)
@@ -70,6 +73,11 @@ void GameState::calculateNextState()
 	  {
 	    /*collision*/
 	    cout<<"Interball Collision\n";
+	    /*	    ball[i].velocity.x=-ball[i].velocity.x;
+	    ball[i].velocity.y=-ball[i].velocity.y;
+
+	    ball[j].velocity.x=-ball[j].velocity.x;
+	    ball[j].velocity.y=-ball[j].velocity.y;*/
 	  }
       }
   for(int i=0;i<num_balls;i++)
@@ -78,18 +86,25 @@ void GameState::calculateNextState()
 
 
       /*collision with walls*/
-      if(ball[i].position.x*L<BALL_SIZE || PADDLE_WIDTH+ball[i].position.x*L>1-PADDLE_WIDTH-BALL_SIZE)
+      if(ball[i].position.x*L<BALL_SIZE ||
+	 PADDLE_WIDTH+ball[i].position.x*L>1-PADDLE_WIDTH-BALL_SIZE)
 	{
 	  ball[i].velocity.x= -ball[i].velocity.x;
 	}
-      if(ball[i].position.y*L<BALL_SIZE || PADDLE_WIDTH+ball[i].position.y*L>1-PADDLE_WIDTH-BALL_SIZE)
+      if(ball[i].position.y*L<BALL_SIZE || 
+	 PADDLE_WIDTH+ball[i].position.y*L>1-PADDLE_WIDTH-BALL_SIZE)
 	{
 	  ball[i].velocity.y= -ball[i].velocity.y;	  
 	}
 
 	ball[i].position.x+=ball[i].velocity.x;
 	ball[i].position.y+=ball[i].velocity.y;
-  }
+    }
+  //update paddles too...
+  /*  for(int i=0;i<4;i++)
+    if(paddle[i].state==BRICKED)
+    paddle[i].position=ball[0].*/
+    }
 }
 void GameState::printState()
 {
@@ -97,15 +112,19 @@ void GameState::printState()
 }
 void GameState::movePaddle(int dir)
 {
-  paddle[wall_no].position+=0.1*dir;
+  if(status==GAME_STARTED)
+    {
+  paddle[wall_no].position+=0.05*dir;
   if(paddle[wall_no].position>1)
     paddle[wall_no].position=1.0;
   else if(paddle[wall_no].position<0)
     paddle[wall_no].position=0.0;
+    }
 }
 
 void GameState::getServerMessage(ServerMessage &sm)
 {
+  sm.num_balls=num_balls;
   for(int i=0;i<4;i++)
     sm.paddle[i]=paddle[i];
   for(int i=0;i<num_balls;i++)
@@ -119,14 +138,15 @@ void GameState::getClientMessage(ClientMessage &cm)
 void GameState::updateGameState(ServerMessage sm)
 {
   for(int i=0;i<4;i++)
-    paddle[i]=sm.paddle[i];
+    if(i!=wall_no)
+      paddle[i]=sm.paddle[i];
   for(int i=0;i<num_balls;i++)
     ball[i]=sm.ball[i];
 }
 void GameState::updateGameState(ClientMessage cm)
 {
   if(cm.wall_no>=0 && cm.wall_no<4)
-    cm.paddle_position=paddle[cm.wall_no].position;
+    paddle[cm.wall_no].position=cm.paddle_position;
 }
 
 GameState gstate;

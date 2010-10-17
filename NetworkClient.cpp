@@ -8,7 +8,7 @@ public:
 
   /*networking*/
   void initializeClient();
-  void sendMessage(ClientMessage);
+  void sendMessage(Command);
   void recieveMessage();
 
   void processMessage(ServerMessage cm);//updates gstate
@@ -32,16 +32,17 @@ void NetworkClient::initializeClient()
        cout<<"error in connecting";
 }
 
-void NetworkClient::sendMessage(ClientMessage cm)
+void NetworkClient::sendMessage(Command cmd)
 {
+  ClientMessage cm;
+  gstate.getClientMessage(cm);
+  cm.command=cmd;
 send(sockfd,&cm,sizeof(cm),0);
 }
 void NetworkClient::recieveMessage()
 {
   ServerMessage sm;
-  cout<<"waiting...\n";
   recv(sockfd,&sm,sizeof(sm),0);
-  cout<<"recieved...\n";
   cout<<sm.wall_no<<"wall\n";
   processMessage(sm);
 }
@@ -58,12 +59,15 @@ void NetworkClient::processMessage(ServerMessage sm)
     case START:
       break;
     case POSITION:
-      cout<<"Updating...\n";
-      cout<<"Balls:"<<gstate.num_balls;
-      cout<<"Wall:"<<gstate.wall_no;
-      gstate.updateGameState(sm);
+     if(gstate.status==GAME_STARTED)
+       {
+	 cout<<"Updating...\n";
+	 gstate.updateGameState(sm);
+       }
       break;
     case PAUSE:
+      if(gstate.status==GAME_STARTED)
+	gstate.status=GAME_PAUSED;
       break;
     case QUIT:
       break;
@@ -75,21 +79,22 @@ void* client_main(void*)
 {
   ClientMessage cm;
   client.initializeClient();
-  cm.command=CONNECT;
-  cout<<"sending msg...\n";
-  client.sendMessage(cm);
-  cout<<"waiting 4 msg...\n";
+  client.sendMessage(CONNECT);
+  gstate.status=GAME_WAITING;
+
   client.recieveMessage();
   cout<<gstate.wall_no<<"\n";
+
+  //gstate.status=GAME_READY;
+  gstate.status=GAME_STARTED;
   while(1)
     {
       cout<<"send pos:\n";
       gstate.getClientMessage(cm);
-      cm.command=POSITION;
-      client.sendMessage(cm);
+      client.sendMessage(POSITION);
       cout<<"recv pos:\n";
       client.recieveMessage();
       cout<<"("<<gstate.ball[0].position.x<<","<<gstate.ball[0].position.y<<")\n";
-      usleep(10000);
+      usleep(40000);
     }
 }

@@ -4,14 +4,15 @@ public:
   void display();
   void display_board();
   void display_paddles();
-  void display_ball();
+  void display_ball(int);
 };
 void ClientGUI::display()
 {
     glClear (GL_COLOR_BUFFER_BIT);
     display_board();
     display_paddles();
-    display_ball();
+    for(int i=0;i<gstate.num_balls;i++)
+      display_ball(i);
     glutSwapBuffers();
     glFlush ();
 }
@@ -86,7 +87,7 @@ void ClientGUI::display_paddles()
     glEnd();
 
 }
-void ClientGUI::display_ball()
+void ClientGUI::display_ball(int i)
 {
 //filled circle
 float x1,y1,x2,y2;
@@ -94,8 +95,8 @@ float angle;
 double radius=BALL_SIZE;
 
 //x1 = 0.5,y1=0.6;
-x1=PADDLE_WIDTH+gstate.ball[0].position.x*L;
-y1=PADDLE_WIDTH+gstate.ball[0].position.y*L;
+x1=PADDLE_WIDTH+gstate.ball[i].position.x*L;
+y1=PADDLE_WIDTH+gstate.ball[i].position.y*L;
 glColor3f(1.0,1.0,0.0);
 
 glBegin(GL_TRIANGLE_FAN);
@@ -122,9 +123,11 @@ void processNormalKeys(unsigned char key, int x, int y)
   switch(key)
     {
     case 27:cout<<"escape\n";
+      client.sendMessage(QUIT);
       exit(0);
       break;
     case ' ':cout<<"space\n";
+      client.sendMessage(PAUSE);
       break;
     }
 }
