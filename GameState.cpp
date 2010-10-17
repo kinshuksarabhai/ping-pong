@@ -20,6 +20,7 @@ public:
   void printState();
 
   /*for server*/
+  void initializeState();
   void getClientMessage(ClientMessage&);
   void updateGameState(ClientMessage);
   void calculateNextState();
@@ -29,8 +30,11 @@ public:
   void updateGameState(ServerMessage);
   void movePaddle(int);
 };
-
 GameState::GameState()
+{
+  initializeState();
+}
+void GameState::initializeState()
 {
   hardness_level=0;
 
@@ -101,10 +105,62 @@ void GameState::calculateNextState()
 	ball[i].position.y+=ball[i].velocity.y;
     }
   //update paddles too...
-  /*  for(int i=0;i<4;i++)
-    if(paddle[i].state==BRICKED)
-    paddle[i].position=ball[0].*/
-    }
+for(int i=0;i<4;i++)//walls
+    if(paddle[i].pstate==PLAYER_NA)
+      {
+	/*find nearest incoming ball*/
+	float dist=1.0;
+	int ball_no=-1;
+	for(int j=0;j<num_balls;j++)
+	  {
+	    switch(i)
+	      {
+	      case 0:
+		if(ball[j].velocity.y<0 && dist>=ball[j].position.y)
+		  {
+		    ball_no=j;
+		  }
+		break;
+	      case 1:
+		if(ball[j].velocity.x>0 && dist>=1.0-ball[j].position.x)
+		  {
+		    ball_no=j;		    
+		  }
+		break;
+	      case 2:
+		if(ball[j].velocity.y>0 && dist>=1.0-ball[j].position.y)
+		  {
+		    ball_no=j;		    
+		  }
+		break;
+	      case 3:
+		if(ball[j].velocity.x<0 && dist>=ball[j].position.x)
+		  {
+		    ball_no=j;
+		  }
+		   
+	      }
+	  }
+	    /*find new position update*/
+	    if(ball_no!=-1)
+	      {
+		switch(i)
+		  {
+		  case 0:
+		    paddle[i].position=ball[ball_no].position.x;
+		    break;
+		  case 1:
+		    paddle[i].position=ball[ball_no].position.y;
+		    break;
+		  case 2:
+		    paddle[i].position=1.0-ball[ball_no].position.x;
+		    break;
+		  case 3:
+		    paddle[i].position=1.0-ball[ball_no].position.y;
+		  }
+	      }
+	  }
+      }
 }
 void GameState::printState()
 {

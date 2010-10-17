@@ -49,6 +49,9 @@ void GameServer::setupNewGame()
   }
   while(num<1 || num>MAX_BALLS);
   gstate.num_balls=num;
+  cout<<"Num balls:"<<num<<endl;
+  gstate.initializeState();
+  gstate.printState();
 }
 void GameServer::executeGameLoop()
 {

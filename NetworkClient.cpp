@@ -37,7 +37,7 @@ void NetworkClient::sendMessage(Command cmd)
   ClientMessage cm;
   gstate.getClientMessage(cm);
   cm.command=cmd;
-send(sockfd,&cm,sizeof(cm),0);
+  send(sockfd,&cm,sizeof(cm),0);
 }
 void NetworkClient::recieveMessage()
 {
@@ -58,6 +58,7 @@ void NetworkClient::processMessage(ServerMessage sm)
 	  gstate.num_balls=sm.num_balls;
 	  cout<<"Balls:"<<gstate.num_balls;
 	  cout<<"Wall:"<<gstate.wall_no;
+	 gstate.updateGameState(sm);
 	}
       break;
     case START:
