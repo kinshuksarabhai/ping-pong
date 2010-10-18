@@ -63,7 +63,7 @@ sockaddr_in client_addr,socklen_t addrlen)
       //    case INIT:
     case CONNECT:
       cout<<"Connection request...\n";
-     if(gstate.status==GAME_WAITING && num_players<4)
+     if(gstate.status==GAME_WAITING && num_players<gstate.num_players)
 	{
 	  int num=alloc_seq[num_players];
 	  gstate.paddle[num].client_addr=client_addr;
@@ -133,7 +133,7 @@ void* server_main(void*)
   server.initializeServer();
   gstate.status=GAME_WAITING;
   //game waiting
-  while(server.num_players<1)
+  while(server.num_players<gstate.num_players)
     {
       server.recieveMessage();
     }

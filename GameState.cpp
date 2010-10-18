@@ -32,6 +32,7 @@ public:
 };
 GameState::GameState()
 {
+  wall_no=0;
   initializeState();
 }
 void GameState::initializeState()

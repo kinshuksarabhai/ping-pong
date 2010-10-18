@@ -9,10 +9,15 @@ public:
 void ClientGUI::display()
 {
     glClear (GL_COLOR_BUFFER_BIT);
+    glPushMatrix();
+    glTranslatef(0.5,0.5,0);
+    glRotated(gstate.wall_no*90, 0, 0, 1);
+    glTranslatef(-0.5,-0.5,0);
     display_board();
     display_paddles();
     for(int i=0;i<gstate.num_balls;i++)
       display_ball(i);
+    glPopMatrix();
     glutSwapBuffers();
     glFlush ();
 }
