@@ -4,6 +4,7 @@ class NetworkServer
 {
 public:
   int sockfd;
+  sockaddr_in serv_addr;
   int num_players;
 
   /*networking*/
@@ -19,23 +20,14 @@ NetworkServer::NetworkServer()
 }
 void NetworkServer::initializeServer()
 {
-     int portno;
-     sockaddr_in serv_addr;
-
      sockfd = socket(AF_INET, SOCK_DGRAM, 0);
      if (sockfd < 0) 
        cout<<"ERROR opening socket";
 
-     bzero((char *) &serv_addr, sizeof(serv_addr));
-     portno = PORT_NO;
-     serv_addr.sin_family = AF_INET;
-     serv_addr.sin_addr.s_addr = INADDR_ANY;
-     serv_addr.sin_port = htons(portno);
-
+     cout<<"Server started @ "<<ntohs(serv_addr.sin_port)<<"\n";
      if (bind(sockfd, (struct sockaddr *) &serv_addr,
               sizeof(serv_addr)) < 0) 
        cout<<"ERROR on binding";
-     cout<<"Server started @ "<<PORT_NO<<"\n";
 }
 void NetworkServer::sendMessage(Command cmd,int wall_no)
 {
@@ -43,16 +35,29 @@ void NetworkServer::sendMessage(Command cmd,int wall_no)
   gstate.getServerMessage(sm);
   sm.command=cmd;
   sm.wall_no=wall_no;
-  sendto(sockfd,&sm,sizeof(sm),0,(sockaddr*)&gstate.paddle[wall_no].client_addr,
-	 (socklen_t)sizeof(gstate.paddle[wall_no].client_addr));
+cout<<"Sending msg to "<<inet_ntoa(gstate.paddle[wall_no].client_addr.sin_addr)<<":"<<ntohs(gstate.paddle[wall_no].client_addr.sin_port)<<endl;
+int err=  sendto(sockfd,&sm,sizeof(sm),0,(sockaddr*)&gstate.paddle[wall_no].client_addr,
+	 (socklen_t)sizeof(sockaddr_in));
+ if(err!=-1)
+   cout<<"msg sent";
+ else
+   {
+   perror("error");
+   }
 }
 void NetworkServer::recieveMessage()
 {
   ClientMessage cm;
   sockaddr_in client_addr;
-  socklen_t addrlen;
-  recvfrom(sockfd,&cm,sizeof(cm),0,(sockaddr*)&client_addr,&addrlen);
+  socklen_t addrlen=sizeof(sockaddr_in);
+int err=recvfrom(sockfd,&cm,sizeof(cm),0,(sockaddr*)&client_addr,&addrlen);
+      cout<<"Mesg recvd from:"<<inet_ntoa(client_addr.sin_addr)<<":"<<ntohs(client_addr.sin_port)<<":"<<client_addr.sin_port<<endl;
+ if(err!=-1)
+   {
   processMessage(cm,client_addr,addrlen);
+   }
+ else
+   perror("My Error:");
 }
 void NetworkServer::processMessage(ClientMessage cm,
 sockaddr_in client_addr,socklen_t addrlen)
@@ -63,7 +68,7 @@ cout<<"Got cmd:"<<cm.command<<endl;
     {
       //    case INIT:
     case CONNECT:
-      cout<<"Connection request...\n";
+      cout<<"Connection request from:"<<inet_ntoa(client_addr.sin_addr)<<":"<<ntohs(client_addr.sin_port)<<endl;
      if(gstate.status==GAME_WAITING && num_players<gstate.num_players)
 	{
 	  int num=alloc_seq[num_players];

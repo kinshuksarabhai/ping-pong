@@ -1,9 +1,11 @@
 #include <sys/types.h> 
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include<unistd.h>
 
 #include<math.h>
+#include<stdlib.h>
 #include<pthread.h>
 #include<error.h>
 #include<strings.h>
@@ -55,11 +57,12 @@ void GameServer::setupNewGame()
 }
 void GameServer::executeGameLoop()
 {
-  while(1)
+  while(gstate.status!=GAME_FINISHED)
     {
       gstate.calculateNextState();
 	usleep(40000);
     }
+  cout<<"Game finished!"<<endl;
 }
 GameServer gs;
 
@@ -67,6 +70,16 @@ int main(int argc, char **argv)
 {
 
   pthread_t serverthread;
+  bzero((char *) &server.serv_addr, sizeof(sockaddr_in));
+  server.serv_addr.sin_family = AF_INET;
+  server.serv_addr.sin_addr.s_addr = INADDR_ANY;
+  server.serv_addr.sin_port=htons(PORT_NO);
+
+  if(argc>=2)
+    {
+      server.serv_addr.sin_port = htons(atoi(argv[1]));
+      cout<<"args:"<<server.serv_addr.sin_port<<argv[1]<<endl;
+    }
   gs.setupNewGame();
   pthread_create( &serverthread, NULL,server_main,NULL);
   gs.executeGameLoop();
