@@ -48,6 +48,8 @@ void NetworkClient::recieveMessage()
 }
 void NetworkClient::processMessage(ServerMessage sm)
 {
+  cout<<"status:"<<gstate.status<<endl;
+  cout<<"Got cmd:"<<sm.command<<endl;
   switch(sm.command)
     {
     case INIT:
@@ -63,7 +65,7 @@ void NetworkClient::processMessage(ServerMessage sm)
       break;
     case START:
       cout<<"recieved start"<<endl;
-      if(gstate.status==GAME_WAITING ||
+      if(gstate.status==GAME_READY ||
 	 gstate.status==GAME_PAUSED)
 	gstate.status=GAME_STARTED;
       break;

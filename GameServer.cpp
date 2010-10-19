@@ -55,11 +55,12 @@ void GameServer::setupNewGame()
 }
 void GameServer::executeGameLoop()
 {
-  while(1)
+  while(gstate.status!=GAME_FINISHED)
     {
       gstate.calculateNextState();
 	usleep(40000);
     }
+  cout<<"Game finished!"<<endl;
 }
 GameServer gs;
 

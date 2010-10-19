@@ -13,11 +13,12 @@ typedef struct
 
 enum PlayerState{PLAYER_NA,PLAYER_CONNECTED,
 		 PLAYER_READY,PLAYER_PLAYING,
-PLAYER_PAUSED,PLAYER_FINISHED};
+		 PLAYER_PAUSED,PLAYER_FINISHED};
 struct Paddle
 {
   PlayerState pstate; 
   float position;/*valid, if open*/
+  int life;
   sockaddr_in client_addr;
 };
 
@@ -34,6 +35,7 @@ struct ServerMessage
   /*one time*/
   int wall_no;
   int num_balls;
+  int winner;
   /*usual*/
   Paddle paddle[4];
   Ball ball[MAX_BALLS];

@@ -57,7 +57,8 @@ void NetworkServer::recieveMessage()
 void NetworkServer::processMessage(ClientMessage cm,
 sockaddr_in client_addr,socklen_t addrlen)
 {
-  ServerMessage sm;
+  cout<<"status:"<<gstate.status<<endl;
+cout<<"Got cmd:"<<cm.command<<endl;
   switch(cm.command)
     {
       //    case INIT:
@@ -75,15 +76,16 @@ sockaddr_in client_addr,socklen_t addrlen)
       break;
     case READY:
       cout<<"ready mesg...\n";
-      if(gstate.status==GAME_READY || gstate.status==GAME_PAUSED)
+      if(gstate.status==GAME_WAITING || gstate.status==GAME_READY || gstate.status==GAME_PAUSED)
 	{
 	  gstate.paddle[cm.wall_no].pstate=PLAYER_READY;
-	  cout<<num_players<<" players\n";
+	  cout<<gstate.num_players<<num_players<<" players"<<cm.wall_no<<"\n";
 	  /*check if all ready*/
 	  int flag=1;
-	  for(int i=0;i<num_players;i++)
+	  for(int i=0;i<gstate.num_players;i++)
 	    {
 	      int num=alloc_seq[i];
+	      cout<<"st:"<<gstate.paddle[num].pstate<<endl;
 	      if(gstate.paddle[num].pstate!=PLAYER_READY)
 		flag=0;
 	    }
@@ -100,7 +102,7 @@ sockaddr_in client_addr,socklen_t addrlen)
 		}
 	    }
 	  else
-	    cout<<"Not ready yet...\n";
+	    cout<<"Not ready yet..."<<flag<<","<<num_players<<"\n";
 	}
       break;
       //    case START:
@@ -150,9 +152,15 @@ void* server_main(void*)
 	{
 	server.recieveMessage();
 	server.sendMessage(POSITION,alloc_seq[i]);
-	cout<<"Position sent...\n";
+	//cout<<"Position sent...\n";
 	usleep(40000);
 	}
     }
   //game finished
+      for(int i=0;i<server.num_players;i++)
+	{
+	server.sendMessage(POSITION,alloc_seq[i]);
+	//cout<<"Position sent...\n";
+	usleep(40000);
+	}
 }

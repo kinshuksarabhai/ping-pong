@@ -5,9 +5,14 @@ public:
   void display_board();
   void display_paddles();
   void display_ball(int);
+  void display_msg();
+  void display_text(char*,float,float);
 };
 void ClientGUI::display()
 {
+  //char title[25];
+  //  sprintf(title,"Ping-Pong:Playing on Wall %d",gstate.wall_no);
+  //  glutSetWindowTitle(title);
     glClear (GL_COLOR_BUFFER_BIT);
     glPushMatrix();
     glTranslatef(0.5,0.5,0);
@@ -18,6 +23,7 @@ void ClientGUI::display()
     for(int i=0;i<gstate.num_balls;i++)
       display_ball(i);
     glPopMatrix();
+    display_msg();
     glutSwapBuffers();
     glFlush ();
 }
@@ -116,6 +122,55 @@ for (angle=1.0f;angle<361.0f;angle+=0.2)
 
 glEnd();
 }
+void ClientGUI::display_msg()
+{
+  switch(gstate.status)
+    {
+    case GAME_INIT:
+      display_text("Connecting to server...",0.3,0.6);
+      break;
+    case GAME_WAITING:
+      display_text("Press <space> when ready...",0.3,0.6);
+      break;
+    case GAME_READY:
+      display_text("Just be ready...",0.3,0.6);
+      display_text("Waiting for other players...",0.3,0.5);
+      display_text("Game can start any time...",0.3,0.4);
+      break;
+    case GAME_STARTED:
+      char str[20];
+      sprintf(str,"Life: %d",gstate.paddle[gstate.wall_no].life);
+      //      cout<<gstate.wall_no<<","<<gstate.paddle[gstate.wall_no].life<<endl;
+      display_text(str,0.3,0.6);
+      break;
+    case GAME_PAUSED:
+      display_text("GAME PAUSED!",0.3,0.6);
+      display_text("Press <space> when ready...",0.3,0.5);
+      break;
+    case GAME_FINISHED:
+      if(gstate.winner!=-1)
+	{
+	  if(gstate.winner==gstate.wall_no)
+	    display_text("You won! :)",0.3,0.6);
+	  else
+	    display_text("You lose! :(",0.3,0.6);
+	}
+      else
+	{
+	  display_text("Server quits!",0.3,0.6);
+	}
+      //exit(0);
+      break;
+    }
+}
+void ClientGUI::display_text(char *str,float x,float y)
+{
+  int i;
+  glColor3f(1,0,0);
+  glRasterPos3f(x, y,0);
+  for (i=0; str[i]!= '\0';i++)
+    glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24,str[i]);
+}
 void init (void) 
 {
     glClearColor (0.0, 0.0, 0.0, 0.0);
@@ -141,7 +196,7 @@ void processNormalKeys(unsigned char key, int x, int y)
       else if (gstate.status==GAME_PAUSED || gstate.status==GAME_WAITING)
 	{
 	  cout<<"Started game...\n";
-	  gstate.status=GAME_STARTED;
+	  gstate.status=GAME_READY;
 	client.sendMessage(READY);
 	}
       break;
