@@ -33,10 +33,32 @@ void GameClient::executeGameLoop()
 }
 GameClient gc;
 
+void* sender_main(void*)
+{
+    while(gstate.status!=GAME_FINISHED)
+      {
+	switch(gstate.status)
+	  {
+	  case GAME_READY://if server missed READY
+		client.sendMessage(READY);
+		usleep(1000000);
+		break;
+	  case GAME_PAUSED://if server missed PAUSED
+		client.sendMessage(PAUSE);
+		usleep(1000000);
+		break;
+	  case GAME_STARTED://once in a while
+		client.sendMessage(POSITION);
+		usleep(1000000);
+		cout<<"I m working..."<<endl;
+	  }
+      }
+}
+
 int main(int argc, char **argv)
 {
 
-  pthread_t clientthread,guithread;
+  pthread_t clientthread,guithread,senderthread;
   bzero((char *) &client.serv_addr, sizeof(client.serv_addr));
   client.serv_addr.sin_family = AF_INET;
   client.serv_addr.sin_addr.s_addr = INADDR_ANY;
@@ -50,11 +72,13 @@ int main(int argc, char **argv)
     cout<<"args:"<<client.serv_addr.sin_port<<argv[2]<<endl;
     }
   pthread_create( &clientthread, NULL,client_main,NULL);
+  pthread_create( &senderthread, NULL,sender_main,NULL);
   pthread_create( &guithread, NULL,cgui_main,NULL);
 
-  //  gc.executeGameLoop();
+  //gc.executeGameLoop();
 
   pthread_join(clientthread,NULL);
+  pthread_join(senderthread,NULL);
   pthread_join(guithread,NULL);
   /*
   client_main(NULL);*/

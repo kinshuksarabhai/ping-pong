@@ -82,14 +82,13 @@ void* sender_main(void*)
       {
 	switch(gstate.status)
 	  {
-	  case GAME_PAUSED:
-
 	  case GAME_STARTED:
 	    for(int i=0;i<4;i++)
 	      if(gstate.paddle[i].ptype==HUMAN)
 		server.sendMessage(POSITION,i);
+	  default:
+	    usleep(30000);
 	  }
-	usleep(30000);
       }
   for(int i=0;i<4;i++)
     if(gstate.paddle[i].ptype==HUMAN)

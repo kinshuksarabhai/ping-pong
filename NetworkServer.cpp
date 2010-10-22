@@ -146,10 +146,15 @@ void NetworkServer::processMessage(ClientMessage cm,sockaddr_in client_addr)
       break;
       //    case START:
     case POSITION:
-      if(gstate.status==GAME_STARTED)
+      switch(gstate.status)
 	{
+	case GAME_STARTED:
 	gstate.updateGameState(cm,w);
 	cout<<"Updated paddle position...\n";
+	break;
+	case GAME_PAUSED:
+	  //seems that client missed a PAUSE
+	  server.sendMessage(PAUSE,w);
 	}
       break;
 
@@ -225,7 +230,7 @@ void NetworkServer::sendMessage(Command cmd,int wall_no)
     cout<<":"<<ntohs(players[wall_no].client_addr.sin_port)<<endl;
     }
   else
-    cout<<'.';
+    cout<<'.'<<endl;
 
   pthread_mutex_lock(&sockmutex);
     int err=sendto(sockfd,&sm,sizeof(sm),0,

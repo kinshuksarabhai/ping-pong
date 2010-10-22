@@ -112,9 +112,17 @@ void NetworkClient::processMessage(ServerMessage sm)
 	cout<<"start:state:"<<gstate.status<<endl;
       break;
     case POSITION:
-     if(gstate.status==GAME_STARTED)
+      switch(gstate.status)
        {
+	 case GAME_STARTED:
       	 cout<<"."<<endl;
+	 gstate.updateGameState(sm);
+	 break;
+       case GAME_READY:
+       case GAME_PAUSED:
+	 /*missed START*/
+	 cout<<"hey i missed a 'start'..."<<endl;
+	 gstate.status=GAME_STARTED;
 	 gstate.updateGameState(sm);
        }
       break;
@@ -139,11 +147,14 @@ void NetworkClient::sendMessage(Command cmd)
   cm.command=cmd;
   cm.pkt_num=pkt_num;
   pkt_num++;
-  cout<<"Sending command:"<<cm.command<<endl;
-  int err=send(sockfd,&cm,sizeof(cm),0);
-  sent++;
-  if(err==-1)
-    perror("Sending error");
+  while(sent<1)
+    {
+      cout<<"Sending command:"<<cm.command<<"Send:"<<sent<<endl;
+      int err=send(sockfd,&cm,sizeof(cm),0);
+      sent++;
+      if(err==-1)
+	perror("Sending error");
+    }
 }
 void NetworkClient::startGame()
 {
