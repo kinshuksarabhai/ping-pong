@@ -6,109 +6,128 @@ public:
   int sockfd;
   sockaddr_in serv_addr;
 
+  int serv_pkt_num;
+  int pkt_num;
   /*networking*/
   void initializeClient();
   void sendMessage(Command);
   void recieveMessage();
 
   void processMessage(ServerMessage cm);//updates gstate
+  void dispatchMessage();
+
+  void startGame();
+  void pauseGame();
+  void quitGame();
 };
 void NetworkClient::initializeClient()
 {
-     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-     if (sockfd < 0) 
-       cout<<"ERROR opening socket";
+  pkt_num=1;
+  sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+  if (sockfd < 0) 
+    cout<<"ERROR opening socket";
 
-     cout<<"Client connecting to "<<inet_ntoa(serv_addr.sin_addr)<<":"<<ntohs(serv_addr.sin_port)<<endl;
-     if(connect(sockfd,(struct sockaddr *)&serv_addr,sizeof(serv_addr))<0)
-       cout<<"error in connecting";
+  cout<<"Client connecting to "<<inet_ntoa(serv_addr.sin_addr)<<":"<<ntohs(serv_addr.sin_port)<<endl;
+
+  if(connect(sockfd,(struct sockaddr *)&serv_addr,sizeof(serv_addr))<0)
+    cout<<"error in connecting";
 }
 
-void NetworkClient::sendMessage(Command cmd)
+NetworkClient client;
+void* client_main(void*)
 {
-  ClientMessage cm;
-  gstate.getClientMessage(cm);
-  cm.command=cmd;
-  send(sockfd,&cm,sizeof(cm),0);
+  //game init
+  client.initializeClient();
+  client.sendMessage(CONNECT);
+  gstate.status=GAME_WAITING;
+  while(gstate.status!=GAME_FINISHED)
+    {
+      client.dispatchMessage();
+    }
 }
-void NetworkClient::recieveMessage()
+void NetworkClient::dispatchMessage()
 {
   ServerMessage sm;
   int err=recv(sockfd,&sm,sizeof(sm),0);
-cout<<"msg rcvd\n";
-  if(err!=-1)
-    {
-      cout<<sm.wall_no<<"wall\n";
-      processMessage(sm);
-    }
+  if(err==-1)
+    perror("Receive error");
   else
     {
-    perror("Error:");
-    }
-}
-void NetworkClient::processMessage(ServerMessage sm)
-{
-  cout<<"status:"<<gstate.status<<endl;
-  cout<<"Got cmd:"<<sm.command<<endl;
+     cout<<"Mesg recvd from:"<<inet_ntoa(client_addr.sin_addr)<<":"<<ntohs(client_addr.sin_port)<<endl;
+     cout<<"Command:"<<cm.command<<endl;
+     cout<<"Pkt no.:"<<cm.pkt_num<<endl;
   switch(sm.command)
     {
     case INIT:
       cout<<"recieved init"<<endl;
-      if(gstate.status==GAME_WAITING)
+      if(gstate.status==GAME_READY||gstate.status==GAME_WAITING)
 	{
 	  gstate.wall_no=sm.wall_no;
 	  gstate.num_balls=sm.num_balls;
-	  cout<<"Balls:"<<gstate.num_balls;
-	  cout<<"Wall:"<<gstate.wall_no;
+	  cout<<"Balls:"<<gstate.num_balls<<endl;
+	  cout<<"Wall:"<<gstate.wall_no<<endl;
 	 gstate.updateGameState(sm);
+	 gstate.status=GAME_READY;
 	}
       break;
     case START:
       cout<<"recieved start"<<endl;
       if(gstate.status==GAME_READY ||
 	 gstate.status==GAME_PAUSED)
+	{
 	gstate.status=GAME_STARTED;
+	  cout<<"game started...\n";
+	}
+      else
+	cout<<"start:state:"gstate.status<<endl;
       break;
     case POSITION:
      if(gstate.status==GAME_STARTED)
        {
-	 cout<<"Updating...\n";
+      	 cout<<".";
 	 gstate.updateGameState(sm);
        }
       break;
     case PAUSE:
       if(gstate.status==GAME_STARTED)
+	{
 	gstate.status=GAME_PAUSED;
+	  cout<<"game paused...\n";
+	}
       break;
     case QUIT:
       gstate.status=GAME_FINISHED;
       cout<<"\nServer finished";
       break;
     }
+    }
 }
-
-NetworkClient client;
-void* client_main(void*)
+void NetworkClient::sendMessage(Command cmd)
 {
   ClientMessage cm;
-  //game init
-  client.initializeClient();
-  client.sendMessage(CONNECT);
-  gstate.status=GAME_WAITING;
-  //game waiting
-  client.recieveMessage();
-  //game ready
-  while(gstate.status!=GAME_STARTED &&
-	gstate.status!=GAME_FINISHED)
-    {
-      client.recieveMessage();
-    }
-  //game started
-  while(gstate.status!=GAME_FINISHED)
-    {
-      client.sendMessage(POSITION);
-      client.recieveMessage();
-      usleep(40000);
-    }
-  //game finished
+  int sent=0;
+  gstate.getClientMessage(cm);
+  cm.command=cmd;
+  cm.pkt_num=pkt_num;
+  pkt_num++;
+  cout<<"Sending command:"<<cm.command<<endl;
+  int err=send(sockfd,&cm,sizeof(cm),0);
+  sent++;
+  if(err==-1)
+    perror("Sending error");
+}
+void NetworkClient::startGame()
+{
+  sendMessage(READY);
+  gstate.status=GAME_READY;
+}
+void NetworkClient::pauseGame()
+{
+  sendMessage(PAUSE);
+  gstate.status=GAME_PAUSED;
+}
+void NetworkClient::quitGame()
+{
+  sendMessage(QUIT);
+  exit(0);
 }

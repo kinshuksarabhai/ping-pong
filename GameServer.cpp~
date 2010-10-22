@@ -1,3 +1,4 @@
+#include <sys/time.h>
 #include <sys/types.h> 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -8,6 +9,7 @@
 #include<stdlib.h>
 #include<pthread.h>
 #include<error.h>
+#include<string.h>
 #include<strings.h>
 #include<iostream>
 using namespace std;
@@ -30,13 +32,21 @@ void GameServer::setupNewGame()
   int num;
   do
   {
-  cout<<"\nNo. of players (1-4):"<<endl;
-  cin>>num;
+    cout<<endl;
+    cout<<"Select Game Type:"<<endl;
+    cout<<"1. Single player against computer."<<endl;
+    cout<<"2. Two player game."<<endl;
+    cout<<"3. Three player game."<<endl;
+    cout<<"4. Four player game."<<endl;
+    cout<<"Your choice?"<<endl;
+    cin>>num;
   }
   while(num<1 || num>4);
   gstate.num_players=num;
  if(num==1)
    {
+     gstate.paddle[2].ptype=COMPUTER;
+     gstate.paddle[2].pstate=PLAYER_READY;
      do
        {
 	 cout<<"\nHardness level:"<<endl;
@@ -63,16 +73,33 @@ void GameServer::executeGameLoop()
 	usleep(40000);
     }
   cout<<"Game finished!"<<endl;
+  for(int i=0;i<4;i++)
+    if(gstate.paddle[i].ptype==HUMAN)
+      server.sendMessage(POSITION,i);
 }
 GameServer gs;
+
+void* sender_main(void*)
+{
+    while(gstate.status!=GAME_FINISHED)
+      {
+	if(gstate.status==GAME_STARTED)
+	  {
+	    for(int i=0;i<4;i++)
+	      if(gstate.paddle[i].ptype==HUMAN)
+		server.sendMessage(POSITION,i);
+	  }
+	usleep(30000);
+      }
+}
 
 int main(int argc, char **argv)
 {
 
-  pthread_t serverthread;
+  pthread_t serverthread,senderthread;
   bzero((char *) &server.serv_addr, sizeof(sockaddr_in));
   server.serv_addr.sin_family = AF_INET;
-  server.serv_addr.sin_addr.s_addr = INADDR_ANY;
+  server.serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
   server.serv_addr.sin_port=htons(PORT_NO);
 
   if(argc>=2)
@@ -82,6 +109,8 @@ int main(int argc, char **argv)
     }
   gs.setupNewGame();
   pthread_create( &serverthread, NULL,server_main,NULL);
+  pthread_create( &senderthread, NULL,sender_main,NULL);
   gs.executeGameLoop();
   pthread_join(serverthread,NULL);
+  pthread_join(senderthread,NULL);
 }

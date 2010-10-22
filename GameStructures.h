@@ -11,15 +11,18 @@ typedef struct
   float x,y;
 } Vector;
 
+enum PlayerType{AUTO,HUMAN,COMPUTER};
+
 enum PlayerState{PLAYER_NA,PLAYER_CONNECTED,
 		 PLAYER_READY,PLAYER_PLAYING,
 		 PLAYER_PAUSED,PLAYER_FINISHED};
+
 struct Paddle
 {
-  PlayerState pstate; 
+  PlayerType ptype;
+  PlayerState pstate;
   float position;/*valid, if open*/
   int life;
-  sockaddr_in client_addr;
 };
 
 struct Ball
@@ -28,21 +31,36 @@ struct Ball
   Vector velocity;
 };
 
-enum Command{CONNECT,INIT,READY,START,POSITION,PAUSE,QUIT};
-struct ServerMessage
+
+struct PlayerInfo
+{
+  sockaddr_in client_addr;
+  timeval last_msg_time;
+  int last_pkt_num;
+Command last_cmd;
+};
+
+enum Command{TEST,CONNECT,INIT,READY,
+	     START,POSITION,PAUSE,QUIT,ACK};
+
+struct ServerMessage//communicated state
 {
   Command command;
+  int pkt_num;
+
   /*one time*/
   int wall_no;
   int num_balls;
   int winner;
+
   /*usual*/
   Paddle paddle[4];
   Ball ball[MAX_BALLS];
 };
-struct ClientMessage
+struct ClientMessage//communicated state
 {
   Command command;
-  int wall_no;//who is sending??
+  int pkt_num;
   float paddle_position;
+  PlayerState pstate;
 };

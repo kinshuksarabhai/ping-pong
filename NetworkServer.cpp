@@ -4,168 +4,238 @@ class NetworkServer
 {
 public:
   int sockfd;
-  sockaddr_in serv_addr;
+  sockaddr_in serv_addr;//initialized in main
+  int serv_pkt_num;
+
+  pthread_mutex_t sockmutex;
   int num_players;
+  PlayerInfo players[4];
 
   /*networking*/
   NetworkServer();
   void initializeServer();
-  void sendMessage(Command,int);
-  void recieveMessage();
-  void processMessage(ClientMessage cm,sockaddr_in src_addr,socklen_t addrlen);//updates gstate
+
+  void sendMessage(Command cmd,int wall_no);
+  void receiveMessage(ClientMessage&,sockaddr_in&);
+  void processMessage(ClientMessage,sockaddr_in);
+
+  int getWallNo(sockaddr_in client_addr);
+  void tryToStartGame(int);
+  void playerQuit(int);
 };
 NetworkServer::NetworkServer()
 {
+  serv_pkt_num=1;
   num_players=0;
+  pthread_mutex_init(&sockmutex,NULL);
+  for(int i=0;i<4;i++)
+    {
+      players[i].last_pkt_num=0;
+    }
 }
 void NetworkServer::initializeServer()
 {
-     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-     if (sockfd < 0) 
-       cout<<"ERROR opening socket";
+  sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+  if (sockfd < 0) 
+    cout<<"ERROR opening socket";
 
-     cout<<"Server started @ "<<ntohs(serv_addr.sin_port)<<"\n";
-     if (bind(sockfd, (struct sockaddr *) &serv_addr,
-              sizeof(serv_addr)) < 0) 
-       cout<<"ERROR on binding";
-}
-void NetworkServer::sendMessage(Command cmd,int wall_no)
-{
-  ServerMessage sm;
-  gstate.getServerMessage(sm);
-  sm.command=cmd;
-  sm.wall_no=wall_no;
-cout<<"Sending msg to "<<inet_ntoa(gstate.paddle[wall_no].client_addr.sin_addr)<<":"<<ntohs(gstate.paddle[wall_no].client_addr.sin_port)<<endl;
-int err=  sendto(sockfd,&sm,sizeof(sm),0,(sockaddr*)&gstate.paddle[wall_no].client_addr,
-	 (socklen_t)sizeof(sockaddr_in));
- if(err!=-1)
-   cout<<"msg sent";
- else
-   {
-   perror("error");
-   }
-}
-void NetworkServer::recieveMessage()
-{
-  ClientMessage cm;
-  sockaddr_in client_addr;
-  socklen_t addrlen=sizeof(sockaddr_in);
-int err=recvfrom(sockfd,&cm,sizeof(cm),0,(sockaddr*)&client_addr,&addrlen);
-      cout<<"Mesg recvd from:"<<inet_ntoa(client_addr.sin_addr)<<":"<<ntohs(client_addr.sin_port)<<":"<<client_addr.sin_port<<endl;
- if(err!=-1)
-   {
-  processMessage(cm,client_addr,addrlen);
-   }
- else
-   perror("My Error:");
-}
-void NetworkServer::processMessage(ClientMessage cm,
-sockaddr_in client_addr,socklen_t addrlen)
-{
-  cout<<"status:"<<gstate.status<<endl;
-cout<<"Got cmd:"<<cm.command<<endl;
-  switch(cm.command)
-    {
-      //    case INIT:
-    case CONNECT:
-      cout<<"Connection request from:"<<inet_ntoa(client_addr.sin_addr)<<":"<<ntohs(client_addr.sin_port)<<endl;
-     if(gstate.status==GAME_WAITING && num_players<gstate.num_players)
-	{
-	  int num=alloc_seq[num_players];
-	  gstate.paddle[num].client_addr=client_addr;
-	  gstate.paddle[num].pstate=PLAYER_CONNECTED;
-	  sendMessage(INIT,num);
-	  num_players++;
-	  cout<<num_players<<" Connected...\n";
-	}
-      break;
-    case READY:
-      cout<<"ready mesg...\n";
-      if(gstate.status==GAME_WAITING || gstate.status==GAME_READY || gstate.status==GAME_PAUSED)
-	{
-	  gstate.paddle[cm.wall_no].pstate=PLAYER_READY;
-	  cout<<gstate.num_players<<num_players<<" players"<<cm.wall_no<<"\n";
-	  /*check if all ready*/
-	  int flag=1;
-	  for(int i=0;i<gstate.num_players;i++)
-	    {
-	      int num=alloc_seq[i];
-	      cout<<"st:"<<gstate.paddle[num].pstate<<endl;
-	      if(gstate.paddle[num].pstate!=PLAYER_READY)
-		flag=0;
-	    }
-	  if(flag==1)
-	    {
-	      cout<<"All ready... starting game!!\n";
-	      /*start the game*/
-	      gstate.status=GAME_STARTED;
-	      for(int i=0;i<num_players;i++)
-		{
-		  int num=alloc_seq[i];
-		  gstate.paddle[num].pstate=PLAYER_PLAYING;
-		  sendMessage(START,num);
-		}
-	    }
-	  else
-	    cout<<"Not ready yet..."<<flag<<","<<num_players<<"\n";
-	}
-      break;
-      //    case START:
-    case POSITION:
-      if(gstate.status==GAME_STARTED)
-	gstate.updateGameState(cm);
-      break;
-    case PAUSE:
-      if(gstate.status==GAME_STARTED)
-	{
-	gstate.status=GAME_PAUSED;
-	for(int i=0;i<num_players;i++)
-	  {
-	    int num=alloc_seq[i];
-	    gstate.paddle[num].pstate=PLAYER_PAUSED;
-	      sendMessage(PAUSE,num);
-	  }
-	}
-      break;
-    case QUIT:
-      break;
-    }
+  cout<<"Server started @ "<<ntohs(serv_addr.sin_port)<<"\n";
+  if (bind(sockfd, (struct sockaddr *) &serv_addr,
+	   sizeof(serv_addr)) < 0) 
+    cout<<"ERROR on binding";
 }
 
 NetworkServer server;
 void* server_main(void*)
 {
-  ServerMessage sm;
+  ClientMessage cm;
+  sockaddr_in client_addr;
+
   //game init
   server.initializeServer();
   gstate.status=GAME_WAITING;
-  //game waiting
-  while(server.num_players<gstate.num_players)
-    {
-      server.recieveMessage();
-    }
-  gstate.status=GAME_READY;
-  //game ready
-  while(gstate.status!=GAME_STARTED)
-    {
-      server.recieveMessage();
-    }
-  //game started
   while(gstate.status!=GAME_FINISHED)
     {
-      for(int i=0;i<server.num_players;i++)
+      server.receiveMessage(cm,client_addr);
+      server.processMessage(cm,client_addr);
+    }
+}
+
+void NetworkServer::receiveMessage(ClientMessage &cm,sockaddr_in &client_addr)
+{
+  socklen_t addrlen=sizeof(sockaddr_in);
+  int err=recvfrom(sockfd,&cm,sizeof(cm),0,(sockaddr*)&client_addr,&addrlen);
+
+  if(err==-1)
+    perror("Receive Error");
+  else
+    {
+     cout<<"Mesg recvd from:"<<inet_ntoa(client_addr.sin_addr)<<":"<<ntohs(client_addr.sin_port)<<endl;
+     cout<<"Command:"<<cm.command<<endl;
+     cout<<"Pkt no.:"<<cm.pkt_num<<endl;
+    }
+}
+void NetworkServer::processMessage(ClientMessage cm,sockaddr_in client_addr)
+{
+  int w=getWallNo(client_addr);
+
+  if(w!=-1)
+    {/*regular update*/
+
+      if(players[w].last_pkt_num>=cm.pkt_num)//discard duplicate/pld pkts.
 	{
-	server.recieveMessage();
-	server.sendMessage(POSITION,alloc_seq[i]);
-	//cout<<"Position sent...\n";
-	usleep(40000);
+	  cout<<"Duplicate/old pkt."<<endl;
+	  return;
+	}
+      else
+	{
+	  timeval tv;
+	  gettimeofday(&tv,NULL);
+	  cout<<"Last Pkt no.:"<< players[w].last_pkt_num<<endl;
+	  players[w].last_msg_time=tv;
+	  players[w].last_pkt_num=cm.pkt_num;
 	}
     }
-  //game finished
-      for(int i=0;i<server.num_players;i++)
+
+  //process the new pkt.
+  switch(cm.command)
+    {
+      //    case INIT:
+    case CONNECT:
+      cout<<"Connection request from:"<<inet_ntoa(client_addr.sin_addr);
+      cout<<":"<<ntohs(client_addr.sin_port)<<endl;
+
+      if(gstate.status==GAME_WAITING && num_players<gstate.num_players)
 	{
-	server.sendMessage(POSITION,alloc_seq[i]);
-	//cout<<"Position sent...\n";
-	usleep(40000);
+	  /*initialize/update player data*/
+	  int num=alloc_seq[num_players];
+	  gstate.paddle[num].ptype=HUMAN;
+	  gstate.paddle[num].pstate=PLAYER_CONNECTED;
+	  players[num].client_addr=client_addr;
+
+	  timeval tv;
+	  gettimeofday(&tv,NULL);
+	  players[num].last_msg_time=tv;
+	  players[num].last_pkt_num=cm.pkt_num;
+
+	  num_players++;
+	  cout<<num_players<<" Connected...\n";
+	  sendMessage(INIT,num);
 	}
+      else
+	cout<<"sts:"<<gstate.status<< num_players<<endl;
+      break;
+
+    case READY:
+      cout<<"ready mesg...\n";
+      if(gstate.status==GAME_WAITING || gstate.status==GAME_READY || gstate.status==GAME_PAUSED)
+	{
+	  tryToStartGame(w);
+	}
+      break;
+
+      //    case START:
+    case POSITION:
+      if(gstate.status==GAME_STARTED)
+	gstate.updateGameState(cm,w);
+      break;
+
+    case PAUSE:
+      if(gstate.status==GAME_STARTED)
+	{
+	  gstate.status=GAME_PAUSED;
+
+	  /*tell other clients to pause*/
+	  for(int i=0;i<4;i++)
+	    {
+	      if(gstate.paddle[i].ptype==HUMAN)
+		{
+		  gstate.paddle[i].pstate=PLAYER_PAUSED;
+		  sendMessage(PAUSE,i);
+		}
+	    }
+	}
+      break;
+
+    case QUIT:
+      break;
+    }
 }
+void NetworkServer::tryToStartGame(int wall_no)
+{
+  cout<<"try start:"<<wall_no<<endl;
+  gstate.paddle[wall_no].pstate=PLAYER_READY;
+
+  /*check if all ready*/
+  int flag=1;
+  if(num_players!=gstate.num_players)
+    flag=0;
+  else
+    {
+      for(int i=0;i<4;i++)
+	if(gstate.paddle[i].ptype==HUMAN && gstate.paddle[i].pstate!=PLAYER_READY)
+	  flag=0;
+    }
+
+  if(flag==1)
+    {
+      cout<<"All ready... starting game!!\n";
+      /*start the game*/
+      for(int i=0;i<4;i++)
+	if(gstate.paddle[i].ptype==HUMAN)
+	{
+	  sendMessage(START,i);
+	  gstate.paddle[i].pstate=PLAYER_PLAYING;
+	}
+      gstate.status=GAME_STARTED;
+    }
+  else
+    cout<<"not all ready"<<endl;
+}
+void NetworkServer::sendMessage(Command cmd,int wall_no)
+{
+  ServerMessage sm;
+  Command c;
+  int sent=0;
+
+  gstate.getServerMessage(sm);
+  sm.command=cmd;
+  sm.pkt_num=serv_pkt_num;
+  sm.wall_no=wall_no;
+
+  serv_pkt_num++;
+
+  if(sm.command!=POSITION)
+    {
+    cout<<"Sending command:"<<sm.command<<endl;
+    cout<<"Sending msg to:"<<inet_ntoa(players[wall_no].client_addr.sin_addr);
+    cout<<":"<<ntohs(players[wall_no].client_addr.sin_port)<<endl;
+    }
+  else
+    cout<<'.';
+
+  pthread_mutex_lock(&sockmutex);
+    int err=sendto(sockfd,&sm,sizeof(sm),0,
+		   (sockaddr*)&players[wall_no].client_addr,
+		   (socklen_t)sizeof(sockaddr_in));
+   pthread_mutex_unlock(&sockmutex);
+    sent++;
+  if(err==-1)
+    perror("Sending error");
+}
+
+ int NetworkServer::getWallNo(sockaddr_in client_addr)
+ {
+   for(int i=0;i<4;i++)
+     {
+       if(gstate.paddle[i].ptype==HUMAN &&
+	  !memcmp(&players[i].client_addr,&client_addr,sizeof(sockaddr_in)))
+	 return i;
+     }
+   return -1;
+ }
+void NetworkServer::playerQuit(int wall_no)
+{
+  gstate.paddle[wall_no].pstate=PLAYER_FINISHED;
+}
+

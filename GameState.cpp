@@ -9,6 +9,7 @@ public:
   int num_balls;
   int num_players;
   int winner;
+
   /*updatable parameters*/
   int wall_no;//for client
   Status status;
@@ -22,7 +23,7 @@ public:
   /*for server*/
   void initializeState();
   void getClientMessage(ClientMessage&);
-  void updateGameState(ClientMessage);
+  void updateGameState(ClientMessage,int);
   void calculateNextState();
 
   /*for client*/
@@ -43,8 +44,9 @@ void GameState::initializeState()
   /*paddle*/
   for(int i=0;i<4;i++)
     {
-      paddle[i].position=0.5;
+      paddle[i].ptype=AUTO;
       paddle[i].pstate=PLAYER_NA;
+      paddle[i].position=0.5;
       paddle[i].life=5;
     }
   /*balls*/
@@ -105,7 +107,7 @@ void GameState::calculateNextState()
     }
   //update paddles too...
 for(int i=0;i<4;i++)//walls
-    if(paddle[i].pstate==PLAYER_NA)
+  if(paddle[i].ptype==AUTO)
       {
 	/*find nearest incoming ball*/
 	float dist=1.0;
@@ -169,7 +171,7 @@ for(int i=0;i<4;i++)//walls
 	 x1=1-PADDLE_WIDTH+paddle[3].position*(2*PADDLE_WIDTH+L*PADDLE_LENGTH-1);
 
 	 ball_pos=PADDLE_WIDTH+ball[i].position.y*L;
-	 if(paddle[3].pstate!=PLAYER_NA &&(ball_pos<x0 || ball_pos>x1) && paddle[3].life>0)
+	 if(paddle[3].ptype!=AUTO &&(ball_pos<x0 || ball_pos>x1) && paddle[3].life>0)
 	   {
 	     paddle[3].life--;
 	     cout<<"Player 3 Life:"<<paddle[3].life<<endl;
@@ -185,7 +187,7 @@ for(int i=0;i<4;i++)//walls
 	 x0=PADDLE_WIDTH+paddle[1].position*(1-2*PADDLE_WIDTH-L*PADDLE_LENGTH);
 	 x1=PADDLE_WIDTH+L*PADDLE_LENGTH+paddle[1].position*(1-2*PADDLE_WIDTH-L*PADDLE_LENGTH);
 	 ball_pos=PADDLE_WIDTH+ball[i].position.y*L;
-	 if(paddle[1].pstate!=PLAYER_NA &&(ball_pos<x0 || ball_pos>x1) && paddle[1].life>0)
+	 if(paddle[1].ptype!=AUTO &&(ball_pos<x0 || ball_pos>x1) && paddle[1].life>0)
 	   {
 	     paddle[1].life--;
 	     cout<<"Player 1 Life:"<<paddle[1].life<<endl;
@@ -201,7 +203,7 @@ for(int i=0;i<4;i++)//walls
 	 x0=PADDLE_WIDTH+paddle[0].position*(1-2*PADDLE_WIDTH-L*PADDLE_LENGTH);
 	 x1=PADDLE_WIDTH+L*PADDLE_LENGTH+paddle[0].position*(1-2*PADDLE_WIDTH-L*PADDLE_LENGTH);
 	 ball_pos=PADDLE_WIDTH+ball[i].position.x*L;
-	 if(paddle[0].pstate!=PLAYER_NA &&(ball_pos<x0 || ball_pos>x1) && paddle[0].life>0)
+	 if(paddle[0].ptype!=AUTO &&(ball_pos<x0 || ball_pos>x1) && paddle[0].life>0)
 	   {
 	     paddle[0].life--;
 	     cout<<"Player 0 Life:"<<paddle[0].life<<endl;
@@ -217,7 +219,7 @@ for(int i=0;i<4;i++)//walls
 	 x0=1-PADDLE_WIDTH-L*PADDLE_LENGTH+paddle[2].position*(2*PADDLE_WIDTH+L*PADDLE_LENGTH-1);
 	 x1=1-PADDLE_WIDTH+paddle[2].position*(2*PADDLE_WIDTH+L*PADDLE_LENGTH-1);
 	 ball_pos=PADDLE_WIDTH+ball[i].position.x*L;
-	 if(paddle[2].pstate!=PLAYER_NA &&(ball_pos<x0 || ball_pos>x1) && paddle[2].life>0)
+	 if(paddle[2].ptype!=AUTO &&(ball_pos<x0 || ball_pos>x1) && paddle[2].life>0)
 	   {
 	     paddle[2].life--;
 	     cout<<"Player 2 Life:"<<paddle[2].life<<endl;
@@ -238,21 +240,17 @@ for(int i=0;i<4;i++)//walls
        {
 	 winner=2;
 	 status=GAME_FINISHED;
-       cout<<winner<<"won"<<endl;
+	 cout<<winner<<" won"<<endl;
        }
-     /*     else if(paddle[2].pstate==PLAYER_FINISHED)
-	    {
-	      winner=0;
-	      }*/
    }
  else
    {
      int flag=0;
      for(int i=0;i<4;i++)
        {
-	 if(paddle[i].pstate==PLAYER_FINISHED)
+	 if(paddle[i].ptype!=AUTO && paddle[i].pstate==PLAYER_FINISHED)
 	   flag++;
-	 else if(paddle[i].pstate!=PLAYER_NA)
+	 else
 	   {
 	     winner=i;
 	     //	     cout<<winner<<"won assign"<<endl;
@@ -260,8 +258,8 @@ for(int i=0;i<4;i++)//walls
        }
      if(flag==num_players-1)
        {
-       status=GAME_FINISHED;
-       cout<<winner<<"won"<<endl;
+	 status=GAME_FINISHED;
+	 cout<<winner<<" won"<<endl;
        }
    }
  //done
@@ -297,7 +295,6 @@ void GameState::getServerMessage(ServerMessage &sm)
 }
 void GameState::getClientMessage(ClientMessage &cm)
 {
-  cm.wall_no=wall_no;
   cm.paddle_position=paddle[wall_no].position;
 }
 void GameState::updateGameState(ServerMessage sm)
@@ -318,10 +315,9 @@ void GameState::updateGameState(ServerMessage sm)
       status=GAME_FINISHED;
     }
 }
-void GameState::updateGameState(ClientMessage cm)
+void GameState::updateGameState(ClientMessage cm,int w)
 {
-  if(cm.wall_no>=0 && cm.wall_no<4)
-    paddle[cm.wall_no].position=cm.paddle_position;
+    paddle[w].position=cm.paddle_position;
 }
 
 GameState gstate;

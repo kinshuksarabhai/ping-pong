@@ -183,21 +183,20 @@ void processNormalKeys(unsigned char key, int x, int y)
   switch(key)
     {
     case 27:cout<<"escape\n";
-      client.sendMessage(QUIT);
-      exit(0);
+      client.quitGame();
       break;
     case ' ':cout<<"space\n";
-      if(gstate.status==GAME_STARTED)
+      switch(gstate.status)
 	{
+	case GAME_READY:
+	case GAME_STARTED:
 	  cout<<"Pausing game...\n";
-	  gstate.status=GAME_PAUSED;
-	client.sendMessage(PAUSE);
-	}
-      else if (gstate.status==GAME_PAUSED || gstate.status==GAME_WAITING)
-	{
-	  cout<<"Started game...\n";
-	  gstate.status=GAME_READY;
-	client.sendMessage(READY);
+	  client.pauseGame();
+	  break;
+	case GAME_WAITING:
+	case GAME_PAUSED:
+	  cout<<"Starting game...\n";
+	  client.startGame();
 	}
       break;
     }
