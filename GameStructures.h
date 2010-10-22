@@ -17,6 +17,9 @@ enum PlayerState{PLAYER_NA,PLAYER_CONNECTED,
 		 PLAYER_READY,PLAYER_PLAYING,
 		 PLAYER_PAUSED,PLAYER_FINISHED};
 
+enum Command{TEST,CONNECT,INIT,READY,
+	     START,POSITION,PAUSE,QUIT,ACK};
+
 struct Paddle
 {
   PlayerType ptype;
@@ -37,11 +40,9 @@ struct PlayerInfo
   sockaddr_in client_addr;
   timeval last_msg_time;
   int last_pkt_num;
-Command last_cmd;
+  Command last_cmd;
 };
 
-enum Command{TEST,CONNECT,INIT,READY,
-	     START,POSITION,PAUSE,QUIT,ACK};
 
 struct ServerMessage//communicated state
 {

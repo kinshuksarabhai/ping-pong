@@ -208,10 +208,12 @@ void processSpecialKeys(int key, int x, int y)
 	{
 		case GLUT_KEY_LEFT:
 		  gstate.movePaddle(-1);
+		  client.sendMessage(POSITION);
 		  cout<<"Left\n";
 		  break;
 		case GLUT_KEY_RIGHT:
 		  gstate.movePaddle(1);
+		  client.sendMessage(POSITION);
 		  cout<<"Right\n";
 		  break;
 	}

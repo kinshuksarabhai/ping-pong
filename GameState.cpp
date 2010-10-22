@@ -223,7 +223,7 @@ for(int i=0;i<4;i++)//walls
 	   {
 	     paddle[2].life--;
 	     cout<<"Player 2 Life:"<<paddle[2].life<<endl;
-     cout<<x0<<" to "<<x1<<":"<<ball_pos<<endl;
+	     cout<<x0<<" to "<<x1<<":"<<ball_pos<<endl;
 	     if(paddle[2].life<=0)
 	       {
 	       paddle[2].pstate=PLAYER_FINISHED;
@@ -248,12 +248,15 @@ for(int i=0;i<4;i++)//walls
      int flag=0;
      for(int i=0;i<4;i++)
        {
-	 if(paddle[i].ptype!=AUTO && paddle[i].pstate==PLAYER_FINISHED)
-	   flag++;
-	 else
+	 if(paddle[i].ptype!=AUTO)
 	   {
-	     winner=i;
-	     //	     cout<<winner<<"won assign"<<endl;
+	     if(paddle[i].pstate==PLAYER_FINISHED)
+	       flag++;
+	     else
+	       {
+		 winner=i;
+		 //	     cout<<winner<<"won assign"<<endl;
+	       }
 	   }
        }
      if(flag==num_players-1)
@@ -308,6 +311,7 @@ void GameState::updateGameState(ServerMessage sm)
     }
   for(int i=0;i<num_balls;i++)
     ball[i]=sm.ball[i];
+
   /*check if game finished*/
   if(sm.winner!=-1)
     {

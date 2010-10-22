@@ -53,9 +53,9 @@ void NetworkClient::dispatchMessage()
     perror("Receive error");
   else
     {
-     cout<<"Mesg recvd from:"<<inet_ntoa(client_addr.sin_addr)<<":"<<ntohs(client_addr.sin_port)<<endl;
-     cout<<"Command:"<<cm.command<<endl;
-     cout<<"Pkt no.:"<<cm.pkt_num<<endl;
+      //     cout<<"Mesg recvd from:"<<inet_ntoa(client_addr.sin_addr)<<":"<<ntohs(client_addr.sin_port)<<endl;
+     cout<<"Command:"<<sm.command<<endl;
+     cout<<"Pkt no.:"<<sm.pkt_num<<endl;
   switch(sm.command)
     {
     case INIT:
@@ -67,7 +67,6 @@ void NetworkClient::dispatchMessage()
 	  cout<<"Balls:"<<gstate.num_balls<<endl;
 	  cout<<"Wall:"<<gstate.wall_no<<endl;
 	 gstate.updateGameState(sm);
-	 gstate.status=GAME_READY;
 	}
       break;
     case START:
@@ -79,12 +78,12 @@ void NetworkClient::dispatchMessage()
 	  cout<<"game started...\n";
 	}
       else
-	cout<<"start:state:"gstate.status<<endl;
+	cout<<"start:state:"<<gstate.status<<endl;
       break;
     case POSITION:
      if(gstate.status==GAME_STARTED)
        {
-      	 cout<<".";
+      	 cout<<"."<<endl;
 	 gstate.updateGameState(sm);
        }
       break;
@@ -118,13 +117,13 @@ void NetworkClient::sendMessage(Command cmd)
 }
 void NetworkClient::startGame()
 {
-  sendMessage(READY);
   gstate.status=GAME_READY;
+  sendMessage(READY);
 }
 void NetworkClient::pauseGame()
 {
-  sendMessage(PAUSE);
   gstate.status=GAME_PAUSED;
+  sendMessage(PAUSE);
 }
 void NetworkClient::quitGame()
 {

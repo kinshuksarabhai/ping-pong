@@ -70,7 +70,8 @@ void NetworkServer::receiveMessage(ClientMessage &cm,sockaddr_in &client_addr)
     perror("Receive Error");
   else
     {
-     cout<<"Mesg recvd from:"<<inet_ntoa(client_addr.sin_addr)<<":"<<ntohs(client_addr.sin_port)<<endl;
+      //     cout<<"Mesg recvd from:"<<inet_ntoa(client_addr.sin_addr)<<":"<<ntohs(client_addr.sin_port)<<endl;
+      cout<<"State:"<<gstate.status<<endl;
      cout<<"Command:"<<cm.command<<endl;
      cout<<"Pkt no.:"<<cm.pkt_num<<endl;
     }
@@ -137,7 +138,10 @@ void NetworkServer::processMessage(ClientMessage cm,sockaddr_in client_addr)
       //    case START:
     case POSITION:
       if(gstate.status==GAME_STARTED)
+	{
 	gstate.updateGameState(cm,w);
+	cout<<"Updated paddle position...\n";
+	}
       break;
 
     case PAUSE:
@@ -208,7 +212,7 @@ void NetworkServer::sendMessage(Command cmd,int wall_no)
   if(sm.command!=POSITION)
     {
     cout<<"Sending command:"<<sm.command<<endl;
-    cout<<"Sending msg to:"<<inet_ntoa(players[wall_no].client_addr.sin_addr);
+    // cout<<"Sending msg to:"<<inet_ntoa(players[wall_no].client_addr.sin_addr);
     cout<<":"<<ntohs(players[wall_no].client_addr.sin_port)<<endl;
     }
   else
