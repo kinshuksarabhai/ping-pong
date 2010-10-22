@@ -11,9 +11,9 @@ public:
   /*networking*/
   void initializeClient();
   void sendMessage(Command);
-  void recieveMessage();
+  void receiveMessage(ServerMessage &sm);
 
-  void processMessage(ServerMessage cm);//updates gstate
+  void processMessage(ServerMessage sm);//updates gstate
   void dispatchMessage();
 
   void startGame();
@@ -36,18 +36,19 @@ void NetworkClient::initializeClient()
 NetworkClient client;
 void* client_main(void*)
 {
+  ServerMessage sm;
   //game init
   client.initializeClient();
   client.sendMessage(CONNECT);
   gstate.status=GAME_WAITING;
   while(gstate.status!=GAME_FINISHED)
     {
-      client.dispatchMessage();
+      client.receiveMessage(sm);
+      client.processMessage(sm);
     }
 }
-void NetworkClient::dispatchMessage()
+void NetworkClient::receiveMessage(ServerMessage &sm)
 {
-  ServerMessage sm;
   int err=recv(sockfd,&sm,sizeof(sm),0);
   if(err==-1)
     perror("Receive error");
@@ -56,6 +57,11 @@ void NetworkClient::dispatchMessage()
       //     cout<<"Mesg recvd from:"<<inet_ntoa(client_addr.sin_addr)<<":"<<ntohs(client_addr.sin_port)<<endl;
      cout<<"Command:"<<sm.command<<endl;
      cout<<"Pkt no.:"<<sm.pkt_num<<endl;
+    }
+}
+
+void NetworkClient::processMessage(ServerMessage sm)
+{
   switch(sm.command)
     {
     case INIT:
@@ -98,7 +104,6 @@ void NetworkClient::dispatchMessage()
       gstate.status=GAME_FINISHED;
       cout<<"\nServer finished";
       break;
-    }
     }
 }
 void NetworkClient::sendMessage(Command cmd)

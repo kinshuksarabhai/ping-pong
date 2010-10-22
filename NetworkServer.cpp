@@ -105,8 +105,12 @@ void NetworkServer::processMessage(ClientMessage cm,sockaddr_in client_addr)
     case CONNECT:
       cout<<"Connection request from:"<<inet_ntoa(client_addr.sin_addr);
       cout<<":"<<ntohs(client_addr.sin_port)<<endl;
-
-      if(gstate.status==GAME_WAITING && num_players<gstate.num_players)
+      if(w!=-1) //registered player? may be he did not get INIT...
+	{
+	  cout<<"Rcvf connect again...";
+	  sendMessage(INIT,w);
+	}
+      else if(gstate.status==GAME_WAITING && num_players<gstate.num_players)
 	{
 	  /*initialize/update player data*/
 	  int num=alloc_seq[num_players];
@@ -123,18 +127,21 @@ void NetworkServer::processMessage(ClientMessage cm,sockaddr_in client_addr)
 	  cout<<num_players<<" Connected...\n";
 	  sendMessage(INIT,num);
 	}
-      else
-	cout<<"sts:"<<gstate.status<< num_players<<endl;
       break;
 
     case READY:
       cout<<"ready mesg...\n";
-      if(gstate.status==GAME_WAITING || gstate.status==GAME_READY || gstate.status==GAME_PAUSED)
+      switch(gstate.status)
 	{
+	case GAME_WAITING:
+	case GAME_READY:
+	case GAME_PAUSED:
 	  tryToStartGame(w);
+	case GAME_STARTED:
+	  //why waiting (the client)? start the game...
+	  sendMessage(START,w);
 	}
       break;
-
       //    case START:
     case POSITION:
       if(gstate.status==GAME_STARTED)
