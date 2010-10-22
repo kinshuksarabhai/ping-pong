@@ -40,7 +40,7 @@ struct PlayerInfo
   sockaddr_in client_addr;
   timeval last_msg_time;
   int last_pkt_num;
-  Command last_cmd;
+//  Command last_cmd;
 };
 
 
@@ -63,5 +63,5 @@ struct ClientMessage//communicated state
   Command command;
   int pkt_num;
   float paddle_position;
-  PlayerState pstate;
+//  PlayerState pstate;
 };

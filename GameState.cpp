@@ -5,7 +5,9 @@ class GameState
 {
 public:
   /*static*/
-  float hardness_level;//server only
+  float hardness_level;//server only: probabilty of failure
+  int hit_no;
+
   int num_balls;
   int num_players;
   int winner;
@@ -34,11 +36,8 @@ public:
 GameState::GameState()
 {
   wall_no=0;
-  initializeState();
-}
-void GameState::initializeState()
-{
   hardness_level=0;
+  hit_no=1;
   winner=-1;
   status=GAME_INIT;
   /*paddle*/
@@ -49,6 +48,10 @@ void GameState::initializeState()
       paddle[i].position=0.5;
       paddle[i].life=5;
     }
+  initializeState();
+}
+void GameState::initializeState()
+{
   /*balls*/
   for(int i=0;i<MAX_BALLS;i++)
     {
@@ -99,7 +102,15 @@ void GameState::calculateNextState()
       if(ball[i].position.y*L<BALL_SIZE || 
 	 PADDLE_WIDTH+ball[i].position.y*L>1-PADDLE_WIDTH-BALL_SIZE)
 	{
-	  ball[i].velocity.y= -ball[i].velocity.y;	  
+	  ball[i].velocity.y= -ball[i].velocity.y;
+	  //for computer player at wall 2
+	  if(paddle[2].ptype==COMPUTER)
+	    {
+	      hit_no=(drand48()<hardness_level)?0:1;//probability of failure
+	      cout<<"Hit no.:"<<hit_no<<endl;
+	    }
+	  else
+	    cout<<"Gadbad...ptype:"<<paddle[2].ptype<<endl;
 	}
 
 	ball[i].position.x+=ball[i].velocity.x;
@@ -107,7 +118,7 @@ void GameState::calculateNextState()
     }
   //update paddles too...
 for(int i=0;i<4;i++)//walls
-  if(paddle[i].ptype==AUTO)
+  if(paddle[i].ptype!=HUMAN)
       {
 	/*find nearest incoming ball*/
 	float dist=1.0;
@@ -154,13 +165,14 @@ for(int i=0;i<4;i++)//walls
 		    paddle[i].position=PADDLE_WIDTH+ball[ball_no].position.y*L;
 		    break;
 		  case 2:
-		    paddle[i].position=1.0-PADDLE_WIDTH-ball[ball_no].position.x*L;
+		    if(paddle[i].ptype!=COMPUTER || hit_no==1)
+		      paddle[i].position=1.0-PADDLE_WIDTH-ball[ball_no].position.x*L;
 		    break;
 		  case 3:
 		    paddle[i].position=1.0-PADDLE_WIDTH-ball[ball_no].position.y*L;
 		  }
 	      }
-	  }
+      }
  float x0,x1,ball_pos;
 /*life loss+game winning condition*/
  for(int i=0;i<num_balls;i++)

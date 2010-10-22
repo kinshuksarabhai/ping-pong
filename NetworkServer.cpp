@@ -176,6 +176,7 @@ void NetworkServer::processMessage(ClientMessage cm,sockaddr_in client_addr)
       break;
 
     case QUIT:
+      gstate.paddle[w].pstate=PLAYER_FINISHED;
       break;
     }
 }

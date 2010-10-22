@@ -49,21 +49,24 @@ void GameServer::setupNewGame()
      gstate.paddle[2].pstate=PLAYER_READY;
      do
        {
-	 cout<<"\nHardness level:"<<endl;
+	 cout<<"\nHardness level (Probability of failure of Computer player)?"<<endl;
 	 cin>>gstate.hardness_level;
+	 if(gstate.hardness_level<0.5)
+	   gstate.hit_no=0;
        }
      while(gstate.hardness_level<0.0 || gstate.hardness_level>1.0);
    }
   do
   {
-    cout<<"\nNo. of balls (1-"<<MAX_BALLS<<"):"<<endl;
+    cout<<"\nNo. of balls (1-"<<MAX_BALLS<<")?"<<endl;
   cin>>num;
   }
   while(num<1 || num>MAX_BALLS);
   gstate.num_balls=num;
   cout<<"Num balls:"<<num<<endl;
-  gstate.initializeState();
-  gstate.printState();
+  cout<<"Hit no."<<gstate.hit_no<<endl;
+  gstate.initializeState();//since num-balls was not known earlier
+  //  gstate.printState();
 }
 void GameServer::executeGameLoop()
 {
