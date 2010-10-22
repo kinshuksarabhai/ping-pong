@@ -6,8 +6,10 @@ public:
   int sockfd;
   sockaddr_in serv_addr;
 
-  int serv_pkt_num;
+  int serv_last_pkt_num;
+  timeval serv_last_msg_time;
   int pkt_num;
+
   /*networking*/
   void initializeClient();
   void sendMessage(Command);
@@ -62,6 +64,23 @@ void NetworkClient::receiveMessage(ServerMessage &sm)
 
 void NetworkClient::processMessage(ServerMessage sm)
 {
+
+  if(serv_last_pkt_num>=sm.pkt_num)//discard duplicate/pld pkts.
+    {
+      cout<<"Duplicate/old pkt."<<endl;
+      return;
+    }
+  else
+    {
+      timeval tv;
+      gettimeofday(&tv,NULL);
+      cout<<"Last Pkt no.:"<< serv_last_pkt_num<<endl;
+      cout<<sm.pkt_num-serv_last_pkt_num-1<<" pkts lost"<<endl;
+      serv_last_msg_time=tv;
+      serv_last_pkt_num=sm.pkt_num;
+    }
+
+  //process the new pkt.
   switch(sm.command)
     {
     case INIT:
@@ -72,7 +91,13 @@ void NetworkClient::processMessage(ServerMessage sm)
 	  gstate.num_balls=sm.num_balls;
 	  cout<<"Balls:"<<gstate.num_balls<<endl;
 	  cout<<"Wall:"<<gstate.wall_no<<endl;
-	 gstate.updateGameState(sm);
+
+	  timeval tv;
+	  gettimeofday(&tv,NULL);
+	  serv_last_msg_time=tv;
+	  serv_last_pkt_num=sm.pkt_num;
+
+	  gstate.updateGameState(sm);
 	}
       break;
     case START:

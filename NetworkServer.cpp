@@ -93,6 +93,7 @@ void NetworkServer::processMessage(ClientMessage cm,sockaddr_in client_addr)
 	  timeval tv;
 	  gettimeofday(&tv,NULL);
 	  cout<<"Last Pkt no.:"<< players[w].last_pkt_num<<endl;
+	  cout<<cm.pkt_num-players[w].last_pkt_num-1<<" pkts lost"<<endl;
 	  players[w].last_msg_time=tv;
 	  players[w].last_pkt_num=cm.pkt_num;
 	}
@@ -137,6 +138,7 @@ void NetworkServer::processMessage(ClientMessage cm,sockaddr_in client_addr)
 	case GAME_READY:
 	case GAME_PAUSED:
 	  tryToStartGame(w);
+	  break;
 	case GAME_STARTED:
 	  //why waiting (the client)? start the game...
 	  sendMessage(START,w);

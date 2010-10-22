@@ -1,8 +1,8 @@
 #define MAX_BALLS 3
 
-#define BALL_SIZE 0.07
+#define BALL_SIZE 0.03
 #define PADDLE_LENGTH 0.3
-#define PADDLE_WIDTH 0.05
+#define PADDLE_WIDTH 0.03
 #define L (1-2*PADDLE_WIDTH)
 
 
