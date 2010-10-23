@@ -80,7 +80,7 @@ void NetworkServer::processMessage(ClientMessage cm,sockaddr_in client_addr)
 {
   int w=getWallNo(client_addr);
 
-  if(w!=-1)
+  if(w!=-1)//registered players
     {/*regular update*/
 
       if(players[w].last_pkt_num>=cm.pkt_num)//discard duplicate/pld pkts.
@@ -98,6 +98,8 @@ void NetworkServer::processMessage(ClientMessage cm,sockaddr_in client_addr)
 	  players[w].last_pkt_num=cm.pkt_num;
 	}
     }
+  else if(cm.command!=CONNECT)//new player and not connecting...?
+    return;
 
   //process the new pkt.
   switch(cm.command)

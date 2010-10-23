@@ -83,12 +83,15 @@ void GameState::calculateNextState()
 	if(distance(ball[i].position,ball[j].position)<=BALL_SIZE)
 	  {
 	    /*collision*/
-	    //cout<<"Interball Collision\n";
-	    /*	    ball[i].velocity.x=-ball[i].velocity.x;
-	    ball[i].velocity.y=-ball[i].velocity.y;
+	    cout<<"Interball Collision\n";
 
-	    ball[j].velocity.x=-ball[j].velocity.x;
-	    ball[j].velocity.y=-ball[j].velocity.y;*/
+	    float nx,ny,nmag;
+	    /*calculate normal vector*/
+	    nx=ball[i].position.x-ball[j].position.x;
+	    ny=ball[i].position.y-ball[j].position.y;
+	    nmag=sqrt(nx*nx+ny*ny);
+
+	    //find v on n (for ball i)
 	  }
       }
   for(int i=0;i<num_balls;i++)

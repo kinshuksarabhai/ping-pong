@@ -39,18 +39,22 @@ void* sender_main(void*)
       {
 	switch(gstate.status)
 	  {
+	  case GAME_WAITING://if server missed CONNECT
+	    client.sendMessage(CONNECT);
+	    usleep(1000000);
+	    break;
 	  case GAME_READY://if server missed READY
-		client.sendMessage(READY);
-		usleep(1000000);
-		break;
+	    client.sendMessage(READY);
+	    usleep(1000000);
+	    break;
 	  case GAME_PAUSED://if server missed PAUSED
-		client.sendMessage(PAUSE);
-		usleep(1000000);
-		break;
+	    client.sendMessage(PAUSE);
+	    usleep(1000000);
+	    break;
 	  case GAME_STARTED://once in a while
-		client.sendMessage(POSITION);
-		usleep(1000000);
-		cout<<"I m working..."<<endl;
+	    client.sendMessage(POSITION);
+	    usleep(1000000);
+	    cout<<"I m working..."<<endl;
 	  }
       }
 }

@@ -127,15 +127,15 @@ void ClientGUI::display_msg()
   switch(gstate.status)
     {
     case GAME_INIT:
-      display_text("Connecting to server...",0.3,0.6);
+      display_text((char*)"Connecting to server...",0.3,0.6);
       break;
     case GAME_WAITING:
-      display_text("Press <space> when ready...",0.3,0.6);
+      display_text((char*)"Press <space> when ready...",0.3,0.6);
       break;
     case GAME_READY:
-      display_text("Just be ready...",0.3,0.6);
-      display_text("Waiting for other players...",0.3,0.5);
-      display_text("Game can start any time...",0.3,0.4);
+      display_text((char*)"Just be ready...",0.3,0.6);
+      display_text((char*)"Waiting for other players...",0.3,0.5);
+      display_text((char*)"Game can start any time...",0.3,0.4);
       break;
     case GAME_STARTED:
       char str[20];
@@ -144,20 +144,20 @@ void ClientGUI::display_msg()
       display_text(str,0.3,0.6);
       break;
     case GAME_PAUSED:
-      display_text("GAME PAUSED!",0.3,0.6);
-      display_text("Press <space> when ready...",0.3,0.5);
+      display_text((char*)"GAME PAUSED!",0.3,0.6);
+      display_text((char*)"Press <space> when ready...",0.3,0.5);
       break;
     case GAME_FINISHED:
       if(gstate.winner!=-1)
 	{
 	  if(gstate.winner==gstate.wall_no)
-	    display_text("You won! :)",0.3,0.6);
+	    display_text((char*)"You won! :)",0.3,0.6);
 	  else
-	    display_text("You lose! :(",0.3,0.6);
+	    display_text((char*)"You lose! :(",0.3,0.6);
 	}
       else
 	{
-	  display_text("Server quits!",0.3,0.6);
+	  display_text((char*)"Server quits!",0.3,0.6);
 	}
       //exit(0);
       break;
@@ -226,7 +226,7 @@ void display()
 void* cgui_main(void*)
 {
   int argc=1;
-  char *argv[]={"client",NULL};
+  char *argv[]={(char*)"client",NULL};
   glutInit(&argc,argv);
     glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize (500, 500); 
