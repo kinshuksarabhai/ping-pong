@@ -29,10 +29,11 @@ public:
 /*initialize game parameters*/
 void GameServer::setupNewGame(int argc, char **argv)
 {
+  float hl=0.0;
   switch(argc)
     {
     case 5://hardness_level
-      gstate.hardness_level=atoi(argv[4]);
+      hl=atoi(argv[4]);
     case 4://balls
       gstate.num_balls=atoi(argv[3]);
       cout<<"Num balls:"<<gstate.num_balls<<endl;
@@ -77,21 +78,25 @@ void GameServer::setupNewGame(int argc, char **argv)
     case 4://no hardness_level
       if(gstate.num_players==1)
 	{
-	  gstate.paddle[2].ptype=COMPUTER;
-	  gstate.paddle[2].pstate=PLAYER_READY;
 	  do
 	    {
 	      cout<<"\nHardness level (Probability of failure of Computer player)?"<<endl;
-	      cin>>gstate.hardness_level;
+	      cin>>hl;
 	    }
-	  while(gstate.hardness_level<0.0 || gstate.hardness_level>1.0);
-	  if(gstate.hardness_level>0.5)
-	    gstate.hit_no=0;
+	  while(hl<0.0 || hl>1.0);
 	}
     }
-  cout<<"Hit no."<<gstate.hit_no<<endl;
-
   gstate.initializeState();//since num-balls was not known earlier
+  if(gstate.num_players==1)
+    {
+      gstate.paddle[2].ptype=COMPUTER;
+      gstate.paddle[2].pstate=PLAYER_READY;
+    }
+  gstate.hardness_level=hl;
+  if(gstate.hardness_level>0.5)
+    gstate.hit_no=0;
+  cout<<"Hardness level:"<<gstate.hardness_level<<endl;
+  cout<<"Hit no."<<gstate.hit_no<<endl;
   //  gstate.printState();
 }
 void GameServer::executeGameLoop()

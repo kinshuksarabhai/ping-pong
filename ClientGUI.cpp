@@ -140,8 +140,12 @@ void ClientGUI::display_msg()
     case GAME_STARTED:
       char str[20];
       sprintf(str,"Life: %d",gstate.paddle[gstate.wall_no].life);
-      //      cout<<gstate.wall_no<<","<<gstate.paddle[gstate.wall_no].life<<endl;
-      display_text(str,0.3,0.6);
+      display_text(str,0.3,0.4);
+      for(int i=0;i<4;i++)
+	{
+	  sprintf(str,"Life %d: %d",i,gstate.paddle[i].life);
+	  display_text(str,0.3,0.5+0.1*i);
+	}
       break;
     case GAME_PAUSED:
       display_text((char*)"GAME PAUSED!",0.3,0.6);

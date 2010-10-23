@@ -9,7 +9,7 @@ server_target: GameServer.cpp NetworkServer.cpp GameState.cpp GameStructures.h
 false:
 
 run: all false
-	./server 3000 1 1 0.3 &
+	./server 3000 1 1 1 &
 	./client
 	@ killall server
 

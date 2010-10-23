@@ -82,13 +82,13 @@ void GameState::calculateNextState()
 	if(distance(ball[i].position,ball[j].position)<=BALL_SIZE)
 	  {
 	    /*collision*/
-	    cout<<"Interball Collision\n";
+	    /*	    cout<<"Interball Collision\n";
 
 	    float nx,ny,nmag;
-	    /*calculate normal vector*/
+	    /*calculate normal vector
 	    nx=ball[i].position.x-ball[j].position.x;
 	    ny=ball[i].position.y-ball[j].position.y;
-	    nmag=sqrt(nx*nx+ny*ny);
+	    nmag=sqrt(nx*nx+ny*ny);*/
 
 	    //find v on n (for ball i)
 	  }
@@ -109,8 +109,11 @@ void GameState::calculateNextState()
 	  if(paddle[2].ptype==COMPUTER)
 	    {
 	      hit_no=(drand48()<hardness_level)?0:1;//probability of failure
+	      cout<<"Hardness level:"<<hardness_level<<endl;
 	      cout<<"Hit no.:"<<hit_no<<endl;
 	    }
+	  else
+	    cout<<"Wrong ptype:"<<paddle[2].ptype<<endl;
 	}
 
 	ball[i].position.x+=ball[i].velocity.x;
@@ -241,6 +244,8 @@ for(int i=0;i<4;i++)//walls
 	       paddle[2].pstate=PLAYER_FINISHED;
 	       }
 	   }
+	 else
+	   cout<<"Gadbad:"<<paddle[2].ptype<<","<<ball_pos<<","<<x0<<","<<x1<<endl;
 
        }
 
@@ -251,6 +256,12 @@ for(int i=0;i<4;i++)//walls
      if(paddle[0].pstate==PLAYER_FINISHED)
        {
 	 winner=2;
+	 status=GAME_FINISHED;
+	 cout<<winner<<" won"<<endl;
+       }
+     else if(paddle[2].pstate==PLAYER_FINISHED)
+       {
+	 winner=0;
 	 status=GAME_FINISHED;
 	 cout<<winner<<" won"<<endl;
        }
