@@ -4,7 +4,6 @@ GAME_STARTED,GAME_PAUSED,GAME_FINISHED};
 class GameState
 {
 public:
-  /*static*/
   float hardness_level;//server only: probabilty of failure
   int hit_no;
 
@@ -35,7 +34,7 @@ public:
 };
 GameState::GameState()
 {
-  wall_no=0;
+  wall_no=-1;
   hardness_level=0;
   hit_no=1;
   winner=-1;
@@ -112,8 +111,6 @@ void GameState::calculateNextState()
 	      hit_no=(drand48()<hardness_level)?0:1;//probability of failure
 	      cout<<"Hit no.:"<<hit_no<<endl;
 	    }
-	  else
-	    cout<<"Gadbad...ptype:"<<paddle[2].ptype<<endl;
 	}
 
 	ball[i].position.x+=ball[i].velocity.x;

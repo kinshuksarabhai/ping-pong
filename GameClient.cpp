@@ -65,7 +65,7 @@ void* sender_main(void*)
       {
 	switch(gstate.status)
 	  {
-	  case GAME_WAITING://if server missed CONNECT
+	  case GAME_INIT://if server missed CONNECT
 	    client.sendMessage(CONNECT);
 	    usleep(1000000);
 	    break;

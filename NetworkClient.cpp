@@ -42,7 +42,6 @@ void* client_main(void*)
   //game init
   client.initializeClient();
   client.sendMessage(CONNECT);
-  gstate.status=GAME_WAITING;
   while(gstate.status!=GAME_FINISHED)
     {
       client.receiveMessage(sm);
@@ -85,7 +84,7 @@ void NetworkClient::processMessage(ServerMessage sm)
     {
     case INIT:
       cout<<"recieved init"<<endl;
-      if(gstate.status==GAME_READY||gstate.status==GAME_WAITING)
+      if(gstate.status==GAME_INIT)
 	{
 	  gstate.wall_no=sm.wall_no;
 	  gstate.num_balls=sm.num_balls;
@@ -98,6 +97,7 @@ void NetworkClient::processMessage(ServerMessage sm)
 	  serv_last_pkt_num=sm.pkt_num;
 
 	  gstate.updateGameState(sm);
+	  gstate.status=GAME_WAITING;
 	}
       break;
     case START:

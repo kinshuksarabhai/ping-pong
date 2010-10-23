@@ -8,5 +8,15 @@ server_target: GameServer.cpp NetworkServer.cpp GameState.cpp GameStructures.h
 
 false:
 
-run: all
-	./server
+run: all false
+	./server 3000 1 1 0.3 &
+	./client
+	@ killall server
+
+run-network-2: all false
+#	PING-PONG-REMOTE-SERVER = localhost
+#	ssh siy107536@palasi.cse.iitd.ac.in
+	./server 3000 2 1 &
+	./client &
+	./client
+	@ killall server
