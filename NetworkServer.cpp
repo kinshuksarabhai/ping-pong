@@ -5,7 +5,6 @@ class NetworkServer
 public:
   int sockfd;
   sockaddr_in serv_addr;//initialized in main
-  int serv_pkt_num;
 
   pthread_mutex_t sockmutex;
   int num_players;
@@ -25,12 +24,12 @@ public:
 };
 NetworkServer::NetworkServer()
 {
-  serv_pkt_num=1;
   num_players=0;
   pthread_mutex_init(&sockmutex,NULL);
   for(int i=0;i<4;i++)
     {
       players[i].last_pkt_num=0;
+      players[i].serv_pkt_num=1;
     }
 }
 void NetworkServer::initializeServer()
@@ -221,10 +220,10 @@ void NetworkServer::sendMessage(Command cmd,int wall_no)
 
   gstate.getServerMessage(sm);
   sm.command=cmd;
-  sm.pkt_num=serv_pkt_num;
+  sm.pkt_num=players[wall_no].serv_pkt_num;
   sm.wall_no=wall_no;
 
-  serv_pkt_num++;
+  players[wall_no].serv_pkt_num++;
 
   if(sm.command!=POSITION)
     {

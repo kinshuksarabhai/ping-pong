@@ -25,12 +25,18 @@ class GameClient
 {
 public:
   /*game logic*/
+  int connect_count;
+  GameClient();
   void setupNewGame(int,char**);
   void executeGameLoop();
 };
-
+GameClient::GameClient()
+{
+  connect_count=0;
+}
 void GameClient::executeGameLoop()
 {
+  //for interpolation
 }
 void GameClient::setupNewGame(int argc,char** argv)
 {

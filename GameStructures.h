@@ -40,6 +40,7 @@ struct PlayerInfo
   sockaddr_in client_addr;
   timeval last_msg_time;
   int last_pkt_num;
+  int serv_pkt_num;
 //  Command last_cmd;
 };
 
