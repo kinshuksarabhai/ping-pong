@@ -30,6 +30,7 @@ NetworkServer::NetworkServer()
     {
       players[i].last_pkt_num=0;
       players[i].serv_pkt_num=1;
+      players[i].total_pkts_lost=0;
     }
 }
 void NetworkServer::initializeServer()
@@ -91,10 +92,12 @@ void NetworkServer::processMessage(ClientMessage cm,sockaddr_in client_addr)
 	{
 	  timeval tv;
 	  gettimeofday(&tv,NULL);
+	  int lost=cm.pkt_num-players[w].last_pkt_num-1;
 	  cout<<"Last Pkt no.:"<< players[w].last_pkt_num<<endl;
-	  cout<<cm.pkt_num-players[w].last_pkt_num-1<<" pkts lost"<<endl;
+	  cout<<lost<<" pkts lost"<<endl;
 	  players[w].last_msg_time=tv;
 	  players[w].last_pkt_num=cm.pkt_num;
+	  players[w].total_pkts_lost+=lost;
 	}
     }
   else if(cm.command!=CONNECT)//new player and not connecting...?
@@ -217,6 +220,8 @@ void NetworkServer::sendMessage(Command cmd,int wall_no)
   ServerMessage sm;
   Command c;
   int sent=0;
+  float avg_pkt_loss=(float)players[wall_no].total_pkts_lost/(players[wall_no].last_pkt_num+1);
+  int dup=1.0/(1-avg_pkt_loss);
 
   gstate.getServerMessage(sm);
   sm.command=cmd;
@@ -235,13 +240,17 @@ void NetworkServer::sendMessage(Command cmd,int wall_no)
     cout<<'.'<<endl;
 
   pthread_mutex_lock(&sockmutex);
+  cout<<"Avg pkt loss:"<<avg_pkt_loss<<endl;
+  while(sent<dup)
+    {
     int err=sendto(sockfd,&sm,sizeof(sm),0,
 		   (sockaddr*)&players[wall_no].client_addr,
 		   (socklen_t)sizeof(sockaddr_in));
-   pthread_mutex_unlock(&sockmutex);
     sent++;
-  if(err==-1)
-    perror("Sending error");
+    if(err==-1)
+      perror("Sending error");
+    }
+   pthread_mutex_unlock(&sockmutex);
 }
 
  int NetworkServer::getWallNo(sockaddr_in client_addr)

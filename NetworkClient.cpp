@@ -8,7 +8,10 @@ public:
 
   int serv_last_pkt_num;
   timeval serv_last_msg_time;
-  int pkt_num;
+  int pkt_num;//sending count
+
+  /*packet loss*/
+  int total_pkts_lost;//incoming
 
   /*networking*/
   void initializeClient();
@@ -25,6 +28,7 @@ public:
 void NetworkClient::initializeClient()
 {
   pkt_num=1;
+  total_pkts_lost=0;
   sockfd = socket(AF_INET, SOCK_DGRAM, 0);
   if (sockfd < 0) 
     cout<<"ERROR opening socket";
@@ -73,10 +77,12 @@ void NetworkClient::processMessage(ServerMessage sm)
     {
       timeval tv;
       gettimeofday(&tv,NULL);
+      int lost=sm.pkt_num-serv_last_pkt_num-1;
       cout<<"Last Pkt no.:"<< serv_last_pkt_num<<endl;
-      cout<<sm.pkt_num-serv_last_pkt_num-1<<" pkts lost"<<endl;
+      cout<<lost<<" pkts lost"<<endl;
       serv_last_msg_time=tv;
       serv_last_pkt_num=sm.pkt_num;
+      total_pkts_lost+=lost;
     }
 
   //process the new pkt.
@@ -143,11 +149,15 @@ void NetworkClient::sendMessage(Command cmd)
 {
   ClientMessage cm;
   int sent=0;
+  float avg_pkt_loss=(float)total_pkts_lost/(serv_last_pkt_num+1);
+  int dup=1.0/(1-avg_pkt_loss);
   gstate.getClientMessage(cm);
   cm.command=cmd;
   cm.pkt_num=pkt_num;
   pkt_num++;
-  while(sent<1)
+
+  cout<<"Avg pkt loss:"<<avg_pkt_loss<<endl;
+  while(sent<dup)
     {
       cout<<"Sending command:"<<cm.command<<"Send:"<<sent<<endl;
       int err=send(sockfd,&cm,sizeof(cm),0);

@@ -39,8 +39,9 @@ struct PlayerInfo
 {
   sockaddr_in client_addr;
   timeval last_msg_time;
-  int last_pkt_num;
-  int serv_pkt_num;
+  int last_pkt_num;//incoming
+  int serv_pkt_num;//outgoing
+  int total_pkts_lost;//incoming
 //  Command last_cmd;
 };
 
