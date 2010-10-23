@@ -23,48 +23,74 @@ class GameServer
 public:
   /*game state*/
   //  GameServer();
-  void setupNewGame();
+  void setupNewGame(int,char**);
   void executeGameLoop();
 };
 /*initialize game parameters*/
-void GameServer::setupNewGame()
+void GameServer::setupNewGame(int argc, char **argv)
 {
-  int num;
-  do
-  {
-    cout<<endl;
-    cout<<"Select Game Type:"<<endl;
-    cout<<"1. Single player against computer."<<endl;
-    cout<<"2. Two player game."<<endl;
-    cout<<"3. Three player game."<<endl;
-    cout<<"4. Four player game."<<endl;
-    cout<<"Your choice?"<<endl;
-    cin>>num;
-  }
-  while(num<1 || num>4);
-  gstate.num_players=num;
- if(num==1)
-   {
-     gstate.paddle[2].ptype=COMPUTER;
-     gstate.paddle[2].pstate=PLAYER_READY;
-     do
-       {
-	 cout<<"\nHardness level (Probability of failure of Computer player)?"<<endl;
-	 cin>>gstate.hardness_level;
-	 if(gstate.hardness_level<0.5)
-	   gstate.hit_no=0;
-       }
-     while(gstate.hardness_level<0.0 || gstate.hardness_level>1.0);
-   }
-  do
-  {
-    cout<<"\nNo. of balls (1-"<<MAX_BALLS<<")?"<<endl;
-  cin>>num;
-  }
-  while(num<1 || num>MAX_BALLS);
-  gstate.num_balls=num;
-  cout<<"Num balls:"<<num<<endl;
+  switch(argc)
+    {
+    case 5://hardness_level
+      gstate.hardness_level=atoi(argv[4]);
+    case 4://balls
+      gstate.num_balls=atoi(argv[3]);
+      cout<<"Num balls:"<<gstate.num_balls<<endl;
+    case 3://game type
+      gstate.num_players=atoi(argv[2]);
+      cout<<"Num players:"<<gstate.num_players<<endl;
+    case 2://port no
+      server.serv_addr.sin_port = htons(atoi(argv[1]));
+      cout<<"port:"<<ntohs(server.serv_addr.sin_port)<<endl;
+    }
+  switch(argc)
+    {
+    case 1://no port no.
+      int port;
+      cout<<"Enter port no. for server:"<<endl;
+      cin>>port;
+      server.serv_addr.sin_port = htons(port);
+    case 2://no Game type etc.
+      int num;
+      do
+	{
+	  cout<<endl;
+	  cout<<"Select Game Type:"<<endl;
+	  cout<<"1. Single player against computer."<<endl;
+	  cout<<"2. Two player game."<<endl;
+	  cout<<"3. Three player game."<<endl;
+	  cout<<"4. Four player game."<<endl;
+	  cout<<"Your choice?"<<endl;
+	  cin>>num;
+	}
+      while(num<1 || num>4);
+      gstate.num_players=num;
+    case 3://no balls
+      do
+	{
+	  cout<<"\nNo. of balls (1-"<<MAX_BALLS<<")?"<<endl;
+	  cin>>num;
+	}
+      while(num<1 || num>MAX_BALLS);
+      gstate.num_balls=num;
+      cout<<"Num balls:"<<num<<endl;
+    case 4://no hardness_level
+      if(gstate.num_players==1)
+	{
+	  gstate.paddle[2].ptype=COMPUTER;
+	  gstate.paddle[2].pstate=PLAYER_READY;
+	  do
+	    {
+	      cout<<"\nHardness level (Probability of failure of Computer player)?"<<endl;
+	      cin>>gstate.hardness_level;
+	    }
+	  while(gstate.hardness_level<0.0 || gstate.hardness_level>1.0);
+	  if(gstate.hardness_level>0.5)
+	    gstate.hit_no=0;
+	}
+    }
   cout<<"Hit no."<<gstate.hit_no<<endl;
+
   gstate.initializeState();//since num-balls was not known earlier
   //  gstate.printState();
 }
@@ -108,13 +134,7 @@ int main(int argc, char **argv)
   server.serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
   server.serv_addr.sin_port=htons(PORT_NO);
 
-  if(argc>=2)
-    {
-      server.serv_addr.sin_port = htons(atoi(argv[1]));
-      cout<<"args:"<<server.serv_addr.sin_port<<argv[1]<<endl;
-    }
-
-  gs.setupNewGame();
+  gs.setupNewGame(argc,argv);
   pthread_create( &serverthread, NULL,server_main,NULL);
   pthread_create( &senderthread, NULL,sender_main,NULL);
   gs.executeGameLoop();

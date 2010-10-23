@@ -23,13 +23,39 @@ using namespace std;
 
 class GameClient
 {
-
+public:
   /*game logic*/
+  void setupNewGame(int,char**);
   void executeGameLoop();
 };
 
 void GameClient::executeGameLoop()
 {
+}
+void GameClient::setupNewGame(int argc,char** argv)
+{
+  switch(argc)
+    {
+    case 3:
+      client.serv_addr.sin_port = htons(atoi(argv[2]));
+      cout<<"Port:"<<ntohs(client.serv_addr.sin_port)<<endl;
+    case 2:
+      inet_pton(AF_INET,argv[1], &client.serv_addr.sin_addr);
+    }
+  /*now ask...
+  switch(argc)
+    {
+    case 1://no host
+      char str[30];
+      cout<<"Enter hostname of server:"<<endl;
+      cin>>str;
+      inet_pton(AF_INET,str, &client.serv_addr.sin_addr);
+    case 2://no port no.
+      int port;
+      cout<<"Enter port no. of server:"<<endl;
+      cin>>port;
+      client.serv_addr.sin_port = htons(port);
+    }*/
 }
 GameClient gc;
 
@@ -68,13 +94,7 @@ int main(int argc, char **argv)
   client.serv_addr.sin_addr.s_addr = INADDR_ANY;
   client.serv_addr.sin_port=htons(PORT_NO);
 
-  if(argc>=2)
-    inet_pton(AF_INET,argv[1], &client.serv_addr.sin_addr);
-  if(argc>=3)
-    {
-    client.serv_addr.sin_port = htons(atoi(argv[2]));
-    cout<<"args:"<<client.serv_addr.sin_port<<argv[2]<<endl;
-    }
+  gc.setupNewGame(argc,argv);
   pthread_create( &clientthread, NULL,client_main,NULL);
   pthread_create( &senderthread, NULL,sender_main,NULL);
   pthread_create( &guithread, NULL,cgui_main,NULL);
