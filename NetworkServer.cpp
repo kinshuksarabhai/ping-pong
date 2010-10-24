@@ -37,12 +37,18 @@ void NetworkServer::initializeServer()
 {
   sockfd = socket(AF_INET, SOCK_DGRAM, 0);
   if (sockfd < 0) 
-    cout<<"ERROR opening socket";
-
-  cout<<"Server started @ "<<ntohs(serv_addr.sin_port)<<"\n";
+    {
+      cout<<"ERROR opening socket...Exiting!";
+      exit(1);
+    }
+  else
+    cout<<"Server started at "<<ntohs(serv_addr.sin_port)<<"\n";
   if (bind(sockfd, (struct sockaddr *) &serv_addr,
 	   sizeof(serv_addr)) < 0) 
-    cout<<"ERROR on binding";
+    {
+      cout<<"ERROR on binding...";
+      exit(1);
+    }
 }
 
 NetworkServer server;

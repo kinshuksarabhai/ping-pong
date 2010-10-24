@@ -33,7 +33,7 @@ void GameServer::setupNewGame(int argc, char **argv)
   switch(argc)
     {
     case 5://hardness_level
-      hl=atoi(argv[4]);
+      hl=atof(argv[4]);
     case 4://balls
       gstate.num_balls=atoi(argv[3]);
       cout<<"Num balls:"<<gstate.num_balls<<endl;

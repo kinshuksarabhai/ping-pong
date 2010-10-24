@@ -9,7 +9,7 @@ server_target: GameServer.cpp NetworkServer.cpp GameState.cpp GameStructures.h
 false:
 
 run: all false
-	./server 3000 1 1 1 &
+	./server 3000 1 1 0.3 &
 	./client
 	@ killall server
 
@@ -20,3 +20,16 @@ run-network-2: all false
 	./client &
 	./client
 	@ killall server
+
+
+test1: all false
+	./server 3000 1 1 0.3 &
+	./client &
+	tester.sh 
+#	@ killall server
+
+test2:
+
+test3:
+
+test4:

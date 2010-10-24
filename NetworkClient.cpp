@@ -6,8 +6,8 @@ public:
   int sockfd;
   sockaddr_in serv_addr;
 
-  int serv_last_pkt_num;
-  timeval serv_last_msg_time;
+  int serv_last_pkt_num;//incoming
+  timeval serv_last_msg_time;//incoming
   int pkt_num;//sending count
 
   /*packet loss*/
@@ -31,12 +31,18 @@ void NetworkClient::initializeClient()
   total_pkts_lost=0;
   sockfd = socket(AF_INET, SOCK_DGRAM, 0);
   if (sockfd < 0) 
-    cout<<"ERROR opening socket";
-
-  cout<<"Client connecting to "<<inet_ntoa(serv_addr.sin_addr)<<":"<<ntohs(serv_addr.sin_port)<<endl;
+    {
+    cout<<"ERROR opening socket...Exiting!";
+    exit(1);
+    }
+  else
+    cout<<"Client connecting to "<<inet_ntoa(serv_addr.sin_addr)<<":"<<ntohs(serv_addr.sin_port)<<endl;
 
   if(connect(sockfd,(struct sockaddr *)&serv_addr,sizeof(serv_addr))<0)
-    cout<<"error in connecting";
+    {
+    cout<<"Error in connecting...";
+    exit(1);
+    }
 }
 
 NetworkClient client;
