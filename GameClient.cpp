@@ -14,6 +14,7 @@
 #include<stdlib.h>
 #include<pthread.h>
 #include<iostream>
+
 using namespace std;
 
 #include"GameStructures.h"
@@ -86,7 +87,6 @@ void* sender_main(void*)
 	  case GAME_STARTED://once in a while
 	    client.sendMessage(POSITION);
 	    usleep(1000000);
-	    cout<<"I m working..."<<endl;
 	  }
       }
 }
@@ -97,10 +97,11 @@ int main(int argc, char **argv)
   pthread_t clientthread,guithread,senderthread;
   bzero((char *) &client.serv_addr, sizeof(client.serv_addr));
   client.serv_addr.sin_family = AF_INET;
-  client.serv_addr.sin_addr.s_addr = INADDR_ANY;
+  client.serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
   client.serv_addr.sin_port=htons(PORT_NO);
 
   gc.setupNewGame(argc,argv);
+
   pthread_create( &clientthread, NULL,client_main,NULL);
   pthread_create( &senderthread, NULL,sender_main,NULL);
   pthread_create( &guithread, NULL,cgui_main,NULL);

@@ -13,6 +13,15 @@ run: all false
 	./client
 	@ killall server
 
+game:
+	./game
+
+run-2player: all false
+	./server 3000 1 1 0.3 &
+	./client &
+	./client
+	@ killall server
+
 run-network-2: all false
 #	PING-PONG-REMOTE-SERVER = localhost
 #	ssh siy107536@palasi.cse.iitd.ac.in
@@ -21,15 +30,27 @@ run-network-2: all false
 	./client
 	@ killall server
 
-
+#automated input test
 test1: all false
 	./server 3000 1 1 0.3 &
 	./client &
-	tester.sh 
-#	@ killall server
+	./tester.sh 
+	@ killall server
 
+#simulated network delay test
 test2:
+	sudo tc qdisc add dev lo root netem delay 100ms
+	make run
+	sudo tc qdisc del dev lo root
 
+#simulated network losses test
 test3:
+	sudo tc qdisc add dev lo root netem loss 50%
+	make run
+	sudo tc qdisc del dev lo root
 
 test4:
+	sudo tc qdisc add dev lo root netem delay 100ms
+	make run
+	sudo tc qdisc del dev lo root
+

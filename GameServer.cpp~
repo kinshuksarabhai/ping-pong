@@ -12,7 +12,10 @@
 #include<string.h>
 #include<strings.h>
 #include<iostream>
+#include<fstream>
 using namespace std;
+
+ofstream send_file,recv_file;
 
 #include"GameStructures.h"
 #include"GameState.cpp"
@@ -33,7 +36,7 @@ void GameServer::setupNewGame(int argc, char **argv)
   switch(argc)
     {
     case 5://hardness_level
-      hl=atoi(argv[4]);
+      hl=atof(argv[4]);
     case 4://balls
       gstate.num_balls=atoi(argv[3]);
       cout<<"Num balls:"<<gstate.num_balls<<endl;
@@ -140,6 +143,7 @@ int main(int argc, char **argv)
   server.serv_addr.sin_port=htons(PORT_NO);
 
   gs.setupNewGame(argc,argv);
+
   pthread_create( &serverthread, NULL,server_main,NULL);
   pthread_create( &senderthread, NULL,sender_main,NULL);
   gs.executeGameLoop();

@@ -73,13 +73,9 @@ void NetworkServer::receiveMessage(ClientMessage &cm,sockaddr_in &client_addr)
   int err=recvfrom(sockfd,&cm,sizeof(cm),0,(sockaddr*)&client_addr,&addrlen);
 
   if(err==-1)
-    perror("Receive Error");
-  else
     {
-      //     cout<<"Mesg recvd from:"<<inet_ntoa(client_addr.sin_addr)<<":"<<ntohs(client_addr.sin_port)<<endl;
-      cout<<"State:"<<gstate.status<<endl;
-     cout<<"Command:"<<cm.command<<endl;
-     cout<<"Pkt no.:"<<cm.pkt_num<<endl;
+    perror("Receive Error");
+    exit(1);
     }
 }
 void NetworkServer::processMessage(ClientMessage cm,sockaddr_in client_addr)
@@ -99,8 +95,8 @@ void NetworkServer::processMessage(ClientMessage cm,sockaddr_in client_addr)
 	  timeval tv;
 	  gettimeofday(&tv,NULL);
 	  int lost=cm.pkt_num-players[w].last_pkt_num-1;
-	  cout<<"Last Pkt no.:"<< players[w].last_pkt_num<<endl;
-	  cout<<lost<<" pkts lost"<<endl;
+// 	  cout<<"Last Pkt no.:"<< players[w].last_pkt_num<<endl;
+// 	  cout<<lost<<" pkts lost"<<endl;
 	  players[w].last_msg_time=tv;
 	  players[w].last_pkt_num=cm.pkt_num;
 	  players[w].total_pkts_lost+=lost;
@@ -160,7 +156,7 @@ void NetworkServer::processMessage(ClientMessage cm,sockaddr_in client_addr)
 	{
 	case GAME_STARTED:
 	gstate.updateGameState(cm,w);
-	cout<<"Updated paddle position...\n";
+     //	cout<<"Updated paddle position...\n";
 	break;
 	case GAME_PAUSED:
 	  //seems that client missed a PAUSE
@@ -236,25 +232,19 @@ void NetworkServer::sendMessage(Command cmd,int wall_no)
 
   players[wall_no].serv_pkt_num++;
 
-  if(sm.command!=POSITION)
-    {
-    cout<<"Sending command:"<<sm.command<<endl;
-    // cout<<"Sending msg to:"<<inet_ntoa(players[wall_no].client_addr.sin_addr);
-    cout<<":"<<ntohs(players[wall_no].client_addr.sin_port)<<endl;
-    }
-  else
-    cout<<'.'<<endl;
-
   pthread_mutex_lock(&sockmutex);
   cout<<"Avg pkt loss:"<<avg_pkt_loss<<endl;
-  while(sent<dup)
+  while(sent<dup && sent<5)
     {
     int err=sendto(sockfd,&sm,sizeof(sm),0,
 		   (sockaddr*)&players[wall_no].client_addr,
 		   (socklen_t)sizeof(sockaddr_in));
     sent++;
     if(err==-1)
+      {
       perror("Sending error");
+      exit(1);
+      }
     }
    pthread_mutex_unlock(&sockmutex);
 }

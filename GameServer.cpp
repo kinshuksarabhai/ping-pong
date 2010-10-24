@@ -12,6 +12,7 @@
 #include<string.h>
 #include<strings.h>
 #include<iostream>
+
 using namespace std;
 
 #include"GameStructures.h"
@@ -140,6 +141,7 @@ int main(int argc, char **argv)
   server.serv_addr.sin_port=htons(PORT_NO);
 
   gs.setupNewGame(argc,argv);
+
   pthread_create( &serverthread, NULL,server_main,NULL);
   pthread_create( &senderthread, NULL,sender_main,NULL);
   gs.executeGameLoop();

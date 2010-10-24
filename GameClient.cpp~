@@ -14,7 +14,11 @@
 #include<stdlib.h>
 #include<pthread.h>
 #include<iostream>
+#include<fstream>
+
 using namespace std;
+
+ofstream send_file,recv_file;
 
 #include"GameStructures.h"
 #include"GameState.cpp"
@@ -25,12 +29,18 @@ class GameClient
 {
 public:
   /*game logic*/
+  int connect_count;
+  GameClient();
   void setupNewGame(int,char**);
   void executeGameLoop();
 };
-
+GameClient::GameClient()
+{
+  connect_count=0;
+}
 void GameClient::executeGameLoop()
 {
+  //for interpolation
 }
 void GameClient::setupNewGame(int argc,char** argv)
 {
@@ -42,7 +52,7 @@ void GameClient::setupNewGame(int argc,char** argv)
     case 2:
       inet_pton(AF_INET,argv[1], &client.serv_addr.sin_addr);
     }
-  /*now ask...*/
+  /*now ask...
   switch(argc)
     {
     case 1://no host
@@ -55,7 +65,7 @@ void GameClient::setupNewGame(int argc,char** argv)
       cout<<"Enter port no. of server:"<<endl;
       cin>>port;
       client.serv_addr.sin_port = htons(port);
-    }
+    }*/
 }
 GameClient gc;
 
@@ -65,7 +75,7 @@ void* sender_main(void*)
       {
 	switch(gstate.status)
 	  {
-	  case GAME_WAITING://if server missed CONNECT
+	  case GAME_INIT://if server missed CONNECT
 	    client.sendMessage(CONNECT);
 	    usleep(1000000);
 	    break;
@@ -80,7 +90,6 @@ void* sender_main(void*)
 	  case GAME_STARTED://once in a while
 	    client.sendMessage(POSITION);
 	    usleep(1000000);
-	    cout<<"I m working..."<<endl;
 	  }
       }
 }
@@ -91,10 +100,11 @@ int main(int argc, char **argv)
   pthread_t clientthread,guithread,senderthread;
   bzero((char *) &client.serv_addr, sizeof(client.serv_addr));
   client.serv_addr.sin_family = AF_INET;
-  client.serv_addr.sin_addr.s_addr = INADDR_ANY;
+  client.serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
   client.serv_addr.sin_port=htons(PORT_NO);
 
   gc.setupNewGame(argc,argv);
+
   pthread_create( &clientthread, NULL,client_main,NULL);
   pthread_create( &senderthread, NULL,sender_main,NULL);
   pthread_create( &guithread, NULL,cgui_main,NULL);

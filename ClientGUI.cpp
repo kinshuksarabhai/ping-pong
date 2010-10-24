@@ -139,12 +139,13 @@ void ClientGUI::display_msg()
       break;
     case GAME_STARTED:
       char str[20];
-      sprintf(str,"Life: %d",gstate.paddle[gstate.wall_no].life);
-      display_text(str,0.3,0.4);
       for(int i=0;i<4;i++)
 	{
-	  sprintf(str,"Life %d: %d",i,gstate.paddle[i].life);
-	  display_text(str,0.3,0.5+0.1*i);
+	  if(gstate.wall_no==i)
+	    sprintf(str,"Your Life: %d",gstate.paddle[gstate.wall_no].life);
+	  else
+	    sprintf(str,"Paddle %d Life: %d",i+1,gstate.paddle[i].life);
+	  display_text(str,0.3,0.7-0.1*i);
 	}
       break;
     case GAME_PAUSED:
@@ -170,7 +171,7 @@ void ClientGUI::display_msg()
 void ClientGUI::display_text(char *str,float x,float y)
 {
   int i;
-  glColor3f(1,0,0);
+  glColor3f(1,1,1);
   glRasterPos3f(x, y,0);
   for (i=0; str[i]!= '\0';i++)
     glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24,str[i]);

@@ -62,12 +62,9 @@ void NetworkClient::receiveMessage(ServerMessage &sm)
 {
   int err=recv(sockfd,&sm,sizeof(sm),0);
   if(err==-1)
-    perror("Receive error");
-  else
     {
-      //     cout<<"Mesg recvd from:"<<inet_ntoa(client_addr.sin_addr)<<":"<<ntohs(client_addr.sin_port)<<endl;
-     cout<<"Command:"<<sm.command<<endl;
-     cout<<"Pkt no.:"<<sm.pkt_num<<endl;
+    perror("Receive error");
+    exit(1);
     }
 }
 
@@ -95,7 +92,7 @@ void NetworkClient::processMessage(ServerMessage sm)
   switch(sm.command)
     {
     case INIT:
-      cout<<"recieved init"<<endl;
+//      cout<<"recieved init"<<endl;
       if(gstate.status==GAME_INIT)
 	{
 	  gstate.wall_no=sm.wall_no;
@@ -163,13 +160,15 @@ void NetworkClient::sendMessage(Command cmd)
   pkt_num++;
 
   cout<<"Avg pkt loss:"<<avg_pkt_loss<<endl;
-  while(sent<dup)
+  while(sent<dup && sent<5)
     {
-      cout<<"Sending command:"<<cm.command<<"Send:"<<sent<<endl;
       int err=send(sockfd,&cm,sizeof(cm),0);
       sent++;
       if(err==-1)
+	{
 	perror("Sending error");
+	exit(1);
+	}
     }
 }
 void NetworkClient::startGame()
