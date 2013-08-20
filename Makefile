@@ -9,6 +9,9 @@ server_target: GameServer.cpp NetworkServer.cpp GameState.cpp GameStructures.h
 client: .fake
 	g++ -g -o client client.cpp ClientGUI.o GameState.o NetworkClient.o -lm -lGL -lGLU -lglut -lpthread
 
+server: network_server .fake
+	g++ -g -o server server.cpp GameState.o NetworkServer.o -lm -lpthread
+
 client_gui: .fake
 	g++ -g -c ClientGUI.cpp
 
@@ -18,6 +21,8 @@ game_state: .fake
 network_client: .fake
 	g++ -g -c NetworkClient.cpp
 
+network_server: .fake
+	g++ -g -c NetworkServer.cpp
 .fake:
 
 false:
