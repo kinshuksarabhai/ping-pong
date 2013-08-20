@@ -1,15 +1,5 @@
-#include<stdio.h>
+#include"ClientGUI.h"
 
-class ClientGUI
-{
-    public:
-        void display();
-        void display_board();
-        void display_paddles();
-        void display_ball(int);
-        void display_msg();
-        void display_text(char*,float,float);
-};
 void ClientGUI::display()
 {
     //char title[25];

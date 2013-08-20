@@ -1,3 +1,10 @@
+#ifndef GAME_STRUCTURES
+#define GAME_STRUCTURES
+
+//#include <sys/socket.h>
+#include <netinet/in.h>
+//#include <arpa/inet.h>
+
 #define MAX_BALLS 3
 
 #define BALL_SIZE 0.03
@@ -67,3 +74,5 @@ struct ClientMessage//communicated state
   float paddle_position;
 //  PlayerState pstate;
 };
+
+#endif

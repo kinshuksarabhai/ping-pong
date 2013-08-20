@@ -6,6 +6,20 @@ client_target: GameClient.cpp NetworkClient.cpp ClientGUI.cpp GameState.cpp Game
 server_target: GameServer.cpp NetworkServer.cpp GameState.cpp GameStructures.h
 	g++ -g -o server GameServer.cpp -lm -lpthread 
 
+client: .fake
+	g++ -g -o client client.cpp ClientGUI.o GameState.o NetworkClient.o -lm -lGL -lGLU -lglut -lpthread
+
+client_gui: .fake
+	g++ -g -c ClientGUI.cpp
+
+game_state: .fake
+	g++ -g -c GameState.cpp
+
+network_client: .fake
+	g++ -g -c NetworkClient.cpp
+
+.fake:
+
 false:
 
 run: all false

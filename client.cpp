@@ -1,7 +1,4 @@
-#include<GL/gl.h>
-#include<GL/glu.h>
-#include<GL/glut.h>
-
+/*
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -12,34 +9,23 @@
 
 #include<math.h>
 #include<stdlib.h>
+*/
+#include<unistd.h>
+#include<strings.h>
 #include<pthread.h>
 #include<iostream>
 
 using namespace std;
 
 #include"GameStructures.h"
-#include"GameState.cpp"
-#include"NetworkClient.cpp"
-#include"ClientGUI.cpp"
+#include"GameState.h"
+#include"NetworkClient.h"
+#include"ClientGUI.h"
 
-class GameClient
-{
-public:
-  /*game logic*/
-  int connect_count;
-  GameClient();
-  void setupNewGame(int,char**);
-  void executeGameLoop();
-};
-GameClient::GameClient()
-{
-  connect_count=0;
-}
-void GameClient::executeGameLoop()
-{
-  //for interpolation
-}
-void GameClient::setupNewGame(int argc,char** argv)
+int connect_count=0;
+NetworkClient client;
+
+void setupNewGame(int argc,char** argv)
 {
   switch(argc)
     {
@@ -64,8 +50,6 @@ void GameClient::setupNewGame(int argc,char** argv)
       client.serv_addr.sin_port = htons(port);
     }*/
 }
-GameClient gc;
-
 void* sender_main(void*)
 {
     while(gstate.status!=GAME_FINISHED)
@@ -100,7 +84,7 @@ int main(int argc, char **argv)
   client.serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
   client.serv_addr.sin_port=htons(PORT_NO);
 
-  gc.setupNewGame(argc,argv);
+  setupNewGame(argc,argv);
 
   pthread_create( &clientthread, NULL,client_main,NULL);
   pthread_create( &senderthread, NULL,sender_main,NULL);
@@ -112,5 +96,6 @@ int main(int argc, char **argv)
   pthread_join(senderthread,NULL);
   pthread_join(guithread,NULL);
   /*
-  client_main(NULL);*/
+     client_main(NULL);*/
 }
+
