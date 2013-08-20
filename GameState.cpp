@@ -109,11 +109,11 @@ void GameState::calculateNextState()
 	  if(paddle[2].ptype==COMPUTER)
 	    {
 	      hit_no=(drand48()<hardness_level)?0:1;//probability of failure
-	      cout<<"Hardness level:"<<hardness_level<<endl;
-	      cout<<"Hit no.:"<<hit_no<<endl;
+//	      cout<<"Hardness level:"<<hardness_level<<endl;
+//	      cout<<"Hit no.:"<<hit_no<<endl;
 	    }
-	  else
-	    cout<<"Wrong ptype:"<<paddle[2].ptype<<endl;
+//	  else
+//	    cout<<"Wrong ptype:"<<paddle[2].ptype<<endl;
 	}
 
 	ball[i].position.x+=ball[i].velocity.x;
@@ -189,8 +189,8 @@ for(int i=0;i<4;i++)//walls
 	 if(paddle[3].ptype!=AUTO &&(ball_pos<x0 || ball_pos>x1) && paddle[3].life>0)
 	   {
 	     paddle[3].life--;
-	     cout<<"Player 3 Life:"<<paddle[3].life<<endl;
-     cout<<x0<<" to "<<x1<<":"<<ball_pos<<endl;
+//	     cout<<"Player 3 Life:"<<paddle[3].life<<endl;
+//     cout<<x0<<" to "<<x1<<":"<<ball_pos<<endl;
 	     if(paddle[3].life<=0)
 	       {
 	       paddle[3].pstate=PLAYER_FINISHED;
@@ -205,7 +205,7 @@ for(int i=0;i<4;i++)//walls
 	 if(paddle[1].ptype!=AUTO &&(ball_pos<x0 || ball_pos>x1) && paddle[1].life>0)
 	   {
 	     paddle[1].life--;
-	     cout<<"Player 1 Life:"<<paddle[1].life<<endl;
+//	     cout<<"Player 1 Life:"<<paddle[1].life<<endl;
 	     if(paddle[1].life<=0)
 	       {
 	       paddle[1].pstate=PLAYER_FINISHED;
@@ -221,7 +221,7 @@ for(int i=0;i<4;i++)//walls
 	 if(paddle[0].ptype!=AUTO &&(ball_pos<x0 || ball_pos>x1) && paddle[0].life>0)
 	   {
 	     paddle[0].life--;
-	     cout<<"Player 0 Life:"<<paddle[0].life<<endl;
+//	     cout<<"Player 0 Life:"<<paddle[0].life<<endl;
 	     if(paddle[0].life<=0)
 	       {
 	       paddle[0].pstate=PLAYER_FINISHED;
@@ -237,15 +237,15 @@ for(int i=0;i<4;i++)//walls
 	 if(paddle[2].ptype!=AUTO &&(ball_pos<x0 || ball_pos>x1) && paddle[2].life>0)
 	   {
 	     paddle[2].life--;
-	     cout<<"Player 2 Life:"<<paddle[2].life<<endl;
-	     cout<<x0<<" to "<<x1<<":"<<ball_pos<<endl;
+//	     cout<<"Player 2 Life:"<<paddle[2].life<<endl;
+//	     cout<<x0<<" to "<<x1<<":"<<ball_pos<<endl;
 	     if(paddle[2].life<=0)
 	       {
 	       paddle[2].pstate=PLAYER_FINISHED;
 	       }
 	   }
-	 else
-	   cout<<"Gadbad:"<<paddle[2].ptype<<","<<ball_pos<<","<<x0<<","<<x1<<endl;
+//	 else
+//	   cout<<"Gadbad:"<<paddle[2].ptype<<","<<ball_pos<<","<<x0<<","<<x1<<endl;
 
        }
 

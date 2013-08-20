@@ -1,3 +1,4 @@
+#include<stdio.h>
 #define PORT_NO 3000
 int alloc_seq[]={0,2,1,3};
 class NetworkServer
@@ -87,7 +88,7 @@ void NetworkServer::processMessage(ClientMessage cm,sockaddr_in client_addr)
 
       if(players[w].last_pkt_num>=cm.pkt_num)//discard duplicate/pld pkts.
 	{
-	  cout<<"Duplicate/old pkt."<<endl;
+//	  cout<<"Duplicate/old pkt."<<endl;
 	  return;
 	}
       else
@@ -114,7 +115,7 @@ void NetworkServer::processMessage(ClientMessage cm,sockaddr_in client_addr)
       cout<<":"<<ntohs(client_addr.sin_port)<<endl;
       if(w!=-1) //registered player? may be he did not get INIT...
 	{
-	  cout<<"Rcvf connect again...";
+//	  cout<<"Rcvf connect again...";
 	  sendMessage(INIT,w);
 	}
       else if(gstate.status==GAME_WAITING && num_players<gstate.num_players)
@@ -137,7 +138,7 @@ void NetworkServer::processMessage(ClientMessage cm,sockaddr_in client_addr)
       break;
 
     case READY:
-      cout<<"ready mesg...\n";
+//      cout<<"ready mesg...\n";
       switch(gstate.status)
 	{
 	case GAME_WAITING:
@@ -188,7 +189,7 @@ void NetworkServer::processMessage(ClientMessage cm,sockaddr_in client_addr)
 }
 void NetworkServer::tryToStartGame(int wall_no)
 {
-  cout<<"try start:"<<wall_no<<endl;
+//  cout<<"try start:"<<wall_no<<endl;
   gstate.paddle[wall_no].pstate=PLAYER_READY;
 
   /*check if all ready*/
@@ -204,7 +205,7 @@ void NetworkServer::tryToStartGame(int wall_no)
 
   if(flag==1)
     {
-      cout<<"All ready... starting game!!\n";
+//      cout<<"All ready... starting game!!\n";
       /*start the game*/
       for(int i=0;i<4;i++)
 	if(gstate.paddle[i].ptype==HUMAN)
@@ -214,8 +215,8 @@ void NetworkServer::tryToStartGame(int wall_no)
 	}
       gstate.status=GAME_STARTED;
     }
-  else
-    cout<<"not all ready"<<endl;
+//  else
+//    cout<<"not all ready"<<endl;
 }
 void NetworkServer::sendMessage(Command cmd,int wall_no)
 {
@@ -233,7 +234,7 @@ void NetworkServer::sendMessage(Command cmd,int wall_no)
   players[wall_no].serv_pkt_num++;
 
   pthread_mutex_lock(&sockmutex);
-  cout<<"Avg pkt loss:"<<avg_pkt_loss<<endl;
+  cout<<"Server: Avg pkt loss:"<<avg_pkt_loss<<endl;
   while(sent<dup && sent<5)
     {
     int err=sendto(sockfd,&sm,sizeof(sm),0,

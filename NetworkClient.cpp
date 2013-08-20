@@ -1,3 +1,4 @@
+#include<stdio.h>
 #define PORT_NO 3000
 
 class NetworkClient
@@ -73,7 +74,7 @@ void NetworkClient::processMessage(ServerMessage sm)
 
   if(serv_last_pkt_num>=sm.pkt_num)//discard duplicate/pld pkts.
     {
-      cout<<"Duplicate/old pkt."<<endl;
+//      cout<<"Duplicate/old pkt."<<endl;
       return;
     }
   else
@@ -81,8 +82,8 @@ void NetworkClient::processMessage(ServerMessage sm)
       timeval tv;
       gettimeofday(&tv,NULL);
       int lost=sm.pkt_num-serv_last_pkt_num-1;
-      cout<<"Last Pkt no.:"<< serv_last_pkt_num<<endl;
-      cout<<lost<<" pkts lost"<<endl;
+//      cout<<"Last Pkt no.:"<< serv_last_pkt_num<<endl;
+//      cout<<lost<<" pkts lost"<<endl;
       serv_last_msg_time=tv;
       serv_last_pkt_num=sm.pkt_num;
       total_pkts_lost+=lost;
@@ -97,8 +98,8 @@ void NetworkClient::processMessage(ServerMessage sm)
 	{
 	  gstate.wall_no=sm.wall_no;
 	  gstate.num_balls=sm.num_balls;
-	  cout<<"Balls:"<<gstate.num_balls<<endl;
-	  cout<<"Wall:"<<gstate.wall_no<<endl;
+//	  cout<<"Balls:"<<gstate.num_balls<<endl;
+//	  cout<<"Wall:"<<gstate.wall_no<<endl;
 
 	  timeval tv;
 	  gettimeofday(&tv,NULL);
@@ -110,27 +111,27 @@ void NetworkClient::processMessage(ServerMessage sm)
 	}
       break;
     case START:
-      cout<<"recieved start"<<endl;
+//      cout<<"recieved start"<<endl;
       if(gstate.status==GAME_READY ||
 	 gstate.status==GAME_PAUSED)
 	{
 	gstate.status=GAME_STARTED;
-	  cout<<"game started...\n";
+//	  cout<<"game started...\n";
 	}
       else
-	cout<<"start:state:"<<gstate.status<<endl;
+//	cout<<"start:state:"<<gstate.status<<endl;
       break;
     case POSITION:
       switch(gstate.status)
        {
 	 case GAME_STARTED:
-      	 cout<<"."<<endl;
+//      	 cout<<"."<<endl;
 	 gstate.updateGameState(sm);
 	 break;
        case GAME_READY:
        case GAME_PAUSED:
 	 /*missed START*/
-	 cout<<"hey i missed a 'start'..."<<endl;
+//	 cout<<"hey i missed a 'start'..."<<endl;
 	 gstate.status=GAME_STARTED;
 	 gstate.updateGameState(sm);
        }
@@ -139,7 +140,7 @@ void NetworkClient::processMessage(ServerMessage sm)
       if(gstate.status==GAME_STARTED)
 	{
 	gstate.status=GAME_PAUSED;
-	  cout<<"game paused...\n";
+//	  cout<<"game paused...\n";
 	}
       break;
     case QUIT:
@@ -159,7 +160,7 @@ void NetworkClient::sendMessage(Command cmd)
   cm.pkt_num=pkt_num;
   pkt_num++;
 
-  cout<<"Avg pkt loss:"<<avg_pkt_loss<<endl;
+  cout<<"Client: Avg pkt loss:"<<avg_pkt_loss<<endl;
   while(sent<dup && sent<5)
     {
       int err=send(sockfd,&cm,sizeof(cm),0);

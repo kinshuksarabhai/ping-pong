@@ -1,10 +1,10 @@
 all: server_target client_target
 
 client_target: GameClient.cpp NetworkClient.cpp ClientGUI.cpp GameState.cpp GameStructures.h
-	g++ -g -o client -lm -lGL -lGLU -lglut GameClient.cpp
+	g++ -g -o client GameClient.cpp -lm -lGL -lGLU -lglut 
 
 server_target: GameServer.cpp NetworkServer.cpp GameState.cpp GameStructures.h
-	g++ -g -o server -lm -lpthread GameServer.cpp
+	g++ -g -o server GameServer.cpp -lm -lpthread 
 
 false:
 
@@ -36,21 +36,23 @@ test1: all false
 	./client &
 	./tester.sh 
 	@ killall server
+	echo "Test Pass"
 
 #simulated network delay test
-test2:
+test2: false
 	sudo tc qdisc add dev lo root netem delay 100ms
 	make run
 	sudo tc qdisc del dev lo root
 
 #simulated network losses test
-test3:
-	sudo tc qdisc add dev lo root netem loss 50%
+test3: false
+	sudo tc qdisc add dev lo root netem loss 60%
 	make run
 	sudo tc qdisc del dev lo root
 
-test4:
-	sudo tc qdisc add dev lo root netem delay 100ms
+#simulated network packet duplication test
+test4: false
+	sudo tc qdisc add dev lo root netem duplicate 1%
 	make run
 	sudo tc qdisc del dev lo root
 
