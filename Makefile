@@ -1,15 +1,9 @@
-all: server_target client_target
+all: server client
 
-client_target: GameClient.cpp NetworkClient.cpp ClientGUI.cpp GameState.cpp GameStructures.h
-	g++ -g -o client GameClient.cpp -lm -lGL -lGLU -lglut 
-
-server_target: GameServer.cpp NetworkServer.cpp GameState.cpp GameStructures.h
-	g++ -g -o server GameServer.cpp -lm -lpthread 
-
-client: .fake
+client: network_client game_state client_gui .fake
 	g++ -g -o client client.cpp ClientGUI.o GameState.o NetworkClient.o -lm -lGL -lGLU -lglut -lpthread
 
-server: network_server .fake
+server: network_server game_state .fake
 	g++ -g -o server server.cpp GameState.o NetworkServer.o -lm -lpthread
 
 client_gui: .fake
@@ -18,13 +12,15 @@ client_gui: .fake
 game_state: .fake
 	g++ -g -c GameState.cpp
 
-network_client: .fake
+network_client: game_state .fake
 	g++ -g -c NetworkClient.cpp
 
-network_server: .fake
+network_server: game_state .fake
 	g++ -g -c NetworkServer.cpp
+
 .fake:
 
+#unused code (for testing purposes)
 false:
 
 run: all false
